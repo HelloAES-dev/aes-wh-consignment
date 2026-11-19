@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123d38">
+  <meta name="description" content="Mobile warehouse scanner prototype">
+  <title>Warehouse Scan</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <h1>Warehouse Scan</h1>
+      <p>One order. Scan lot, then serial. Repeat.</p>
+    </header>
+
+    <section id="ordCard" class="card">
+      <p class="eyebrow">Start a scan session</p>
+      <h2>Scan the ORD from the paper</h2>
+      <label for="ord">ORD number</label>
+      <input id="ord" autocomplete="off" autocapitalize="characters" placeholder="e.g. ORD2604058" autofocus>
+      <div class="button-row"><button id="start" type="button">Start scanning</button></div>
+    </section>
+
+    <section id="scanCard" class="card hidden">
+      <div class="active-order">
+        <div><p class="eyebrow">Active ORD</p><strong id="ordValue"></strong></div>
+        <button id="newOrd" class="outline-button" type="button">Finish ORD</button>
+      </div>
+      <p class="scanner-status"><span class="status-dot"></span><span id="scanState">Ready for lot barcode</span></p>
+      <p class="eyebrow section-eyebrow">Add an item</p>
+      <h2>Lot first, serial second</h2>
+      <p id="scanHint" class="hint">Scan the lot number barcode.</p>
+      <label for="lot">Lot number</label>
+      <input id="lot" autocomplete="off" autocapitalize="characters" placeholder="e.g. 2604587">
+      <label for="serial">Serial number</label>
+      <input id="serial" autocomplete="off" autocapitalize="characters" placeholder="e.g. TTRE1254" disabled>
+      <div class="button-row">
+        <button id="clear" class="secondary" type="button">Clear fields</button>
+        <button id="add" type="button">Save item</button>
+      </div>
+    </section>
+
+    <section id="listCard" class="card hidden">
+      <div class="section-title-row"><h2>This ORD</h2><span id="count" class="count">0 items</span></div>
+      <p id="empty" class="empty-state">No serials scanned for this ORD yet.</p>
+      <ul id="list" class="scan-list"></ul>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
