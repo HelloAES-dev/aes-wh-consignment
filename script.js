@@ -81,8 +81,10 @@ function handleGoogleCredential(credentialResponse) {
 
   fetch(APP_CONFIG.BACKEND_URL, {
     method: 'POST',
+    // text/plain keeps this cross-origin request simple and avoids an
+    // unsupported OPTIONS preflight in the Apps Script web app.
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'text/plain;charset=utf-8'
     },
     body: JSON.stringify({
       action: 'authCheck',
