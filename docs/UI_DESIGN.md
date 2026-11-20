@@ -13,6 +13,11 @@
 
 The first screen is a Google sign-in gate. The application must not show customer or admin data before authentication succeeds.
 
+The current prototype renders the Google Identity Services button on the root
+page. After Google returns an ID token, the frontend sends an `authCheck`
+request to the Apps Script web app. The scanner remains hidden until the
+backend confirms that the account is active in `CONFIG : อีเมลที่ได้รับสิทธิ์`.
+
 ## Customer withdrawal screen
 
 ```text

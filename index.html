@@ -10,6 +10,9 @@
 
   <!-- Keep presentation styles in the dedicated stylesheet. -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Google Identity Services renders the sign-in button. -->
+  <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 
 <body>
@@ -18,10 +21,22 @@
     <header class="app-header">
       <h1>Warehouse Scan</h1>
       <p>One order. Scan lot, then serial. Repeat.</p>
+      <p id="authenticatedUser" class="authenticated-user hidden"></p>
     </header>
 
+    <!-- Authentication must succeed before the scanner becomes available. -->
+    <section id="authCard" class="card auth-card">
+      <p class="eyebrow">Secure access</p>
+      <h2>Sign in to continue</h2>
+      <p class="hint">
+        Use an approved Google account to access the warehouse scanner.
+      </p>
+      <div id="googleSignInButton" class="google-sign-in"></div>
+      <p id="authStatus" class="status-message" role="status" aria-live="polite"></p>
+    </section>
+
     <!-- The first step starts a scanning session for one ORD number. -->
-    <section id="ordCard" class="card">
+    <section id="ordCard" class="card hidden">
       <p class="eyebrow">Start a scan session</p>
       <h2>Scan the ORD from the paper</h2>
       <label for="ord">ORD number</label>

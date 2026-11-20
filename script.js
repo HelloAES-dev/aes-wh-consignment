@@ -1,3 +1,12 @@
+// Public frontend configuration. These values identify the application but do
+// not grant access; authorization is enforced by the Apps Script backend.
+const APP_CONFIG = Object.freeze({
+  GOOGLE_CLIENT_ID:
+    '527911330380-g9ts5kq4v519vkndkv5lblj1ksjhl4so.apps.googleusercontent.com',
+  BACKEND_URL:
+    'https://script.google.com/macros/s/AKfycbxu-xiD4nNE0VxzS5hnZNqlOrWWcqch6op4UGbmuDfhNhoX7Mcj0uY_XLgQloY6S9tI/exec'
+});
+
 // Return an element by ID using a descriptive helper name.
 function getElementById(elementId) {
   return document.getElementById(elementId);
@@ -5,6 +14,10 @@ function getElementById(elementId) {
 
 // Keep all DOM references together so event handlers can use a clear interface.
 const userInterface = {
+  authenticationCard: getElementById('authCard'),
+  googleSignInButton: getElementById('googleSignInButton'),
+  authenticationStatus: getElementById('authStatus'),
+  authenticatedUser: getElementById('authenticatedUser'),
   orderCard: getElementById('ordCard'),
   scanCard: getElementById('scanCard'),
   listCard: getElementById('listCard'),
@@ -26,6 +39,84 @@ const userInterface = {
 // These values represent the current in-browser scanning session.
 let activeOrderNumber = '';
 let scannedItems = [];
+
+// Display authentication progress and backend rejection messages in one place.
+function setAuthenticationStatus(message) {
+  userInterface.authenticationStatus.textContent = message;
+}
+
+// Initialize the Google button after the external Identity Services script has
+// finished loading.
+function initializeGoogleSignIn() {
+  if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+    setAuthenticationStatus('Google Sign-In could not load. Refresh and try again.');
+    return;
+  }
+
+  window.google.accounts.id.initialize({
+    client_id: APP_CONFIG.GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential
+  });
+
+  window.google.accounts.id.renderButton(userInterface.googleSignInButton, {
+    theme: 'outline',
+    size: 'large',
+    text: 'sign_in_with',
+    shape: 'rectangular',
+    width: 280
+  });
+}
+
+// Send the Google ID token to Apps Script so the backend can verify the account
+// and look it up in CONFIG : อีเมลที่ได้รับสิทธิ์.
+function handleGoogleCredential(credentialResponse) {
+  const idToken = credentialResponse && credentialResponse.credential;
+
+  if (!idToken) {
+    setAuthenticationStatus('Google Sign-In did not return a valid credential.');
+    return;
+  }
+
+  setAuthenticationStatus('Checking your account...');
+
+  fetch(APP_CONFIG.BACKEND_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      action: 'authCheck',
+      idToken
+    })
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Backend request failed with status ${response.status}.`);
+      }
+
+      return response.json();
+    })
+    .then((result) => {
+      if (!result.success || !result.user) {
+        throw new Error(result.message || 'This account is not authorized.');
+      }
+
+      showAuthenticatedApplication(result.user);
+    })
+    .catch((error) => {
+      console.error('Authentication request failed:', error);
+      setAuthenticationStatus(error.message || 'Sign-in could not be completed.');
+    });
+}
+
+// Reveal the scanner only after the backend confirms the signed-in account.
+function showAuthenticatedApplication(user) {
+  userInterface.authenticationCard.classList.add('hidden');
+  userInterface.orderCard.classList.remove('hidden');
+  userInterface.authenticatedUser.textContent = `Signed in as ${user.email}`;
+  userInterface.authenticatedUser.classList.remove('hidden');
+  userInterface.orderInput.focus();
+}
 
 // Escape scanned values before placing them into the rendered item list.
 function escapeHtml(value) {
@@ -185,6 +276,7 @@ function handleSerialKeydown(event) {
 }
 
 // Register all event handlers after the page markup has loaded.
+window.addEventListener('load', initializeGoogleSignIn);
 userInterface.startButton.addEventListener('click', handleStartButtonClick);
 userInterface.orderInput.addEventListener('keydown', handleOrderKeydown);
 userInterface.lotInput.addEventListener('input', updateLotInputState);

@@ -2,7 +2,8 @@
 
 ## Project status
 
-Planning phase. No production backend or customer workflow has been implemented yet.
+Prototype phase. GitHub Pages deployment and the first Google Sign-In gate are
+implemented. Transaction workflows are not connected yet.
 
 ## Purpose
 
@@ -31,6 +32,13 @@ Warehouse shipment
 - Tire serial QR content is the primary identifier at the sugar mill and customer site.
 - Photos are stored in the company Google Drive or Shared Drive.
 - Google Chat receives one-way notifications for new requests.
+
+## Current authentication prototype
+
+- Google Identity Services renders the sign-in button on the root page.
+- Apps Script verifies the Google ID token and checks
+  `CONFIG : อีเมลที่ได้รับสิทธิ์`.
+- The scanner remains hidden until the backend confirms an active account.
 
 ## Planned lifecycle
 
