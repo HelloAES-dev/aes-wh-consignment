@@ -35,6 +35,12 @@ This project is a mobile-first warehouse scanning application. The scan flow is:
 - Verify that empty and invalid fields cannot be saved.
 - Check the layout at mobile and desktop widths.
 
+## Documentation source of truth
+
+- Read the relevant file in `docs/` before changing business logic, data columns, UI behavior, or tests.
+- Keep `docs/DATA_MODEL.md`, `docs/BUSINESS_RULES.md`, `docs/UI_DESIGN.md`, and `docs/TEST_PLAN.md` synchronized with implementation changes.
+- Keep `README.md` updated when the project scope or setup changes.
+
 ## Implementation Plan
 
 1. Confirm Git repository.

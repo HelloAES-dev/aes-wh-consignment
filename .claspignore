@@ -1,0 +1,6 @@
+# Ignore everything by default.
+*
+
+# Upload only the Apps Script backend entry point and manifest.
+!Code.js
+!appsscript.json
