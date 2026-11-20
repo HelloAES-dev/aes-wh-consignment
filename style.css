@@ -1,39 +1,269 @@
-:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #10211f; background: #eef4f2; }
-* { box-sizing: border-box; }
-body { margin: 0; min-height: 100vh; }
-.app-shell { max-width: 680px; margin: auto; padding: 20px 16px 42px; }
-.app-header { margin: -20px -16px 24px; padding: 26px 20px 22px; color: white; background: linear-gradient(135deg, #103c37, #176e60); border-radius: 0 0 24px 24px; }
-h1, h2, p { margin-top: 0; }
-h1 { margin-bottom: 0; font-size: 1.55rem; letter-spacing: -0.03em; }
-h2 { margin-bottom: 14px; font-size: 1.1rem; }
-.app-header p { margin: 7px 0 0; font-size: .95rem; opacity: .82; }
-.card { padding: 18px; margin-bottom: 16px; background: white; border-radius: 18px; box-shadow: 0 5px 18px #123d3812; }
-.eyebrow { margin-bottom: 6px; color: #44726a; font-size: .73rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.section-eyebrow { margin-top: 14px; }
-label { display: block; margin: 13px 0 6px; font-size: .88rem; font-weight: 700; }
-input { width: 100%; min-height: 52px; padding: 12px 13px; color: #10211f; font: inherit; font-size: 1.05rem; border: 1.5px solid #b8cfca; border-radius: 11px; }
-input:focus { outline: 3px solid #6cb5a530; border-color: #277d6e; }
-button { min-height: 48px; padding: 10px 16px; color: white; font: inherit; font-weight: 800; cursor: pointer; background: #176e60; border: 0; border-radius: 11px; }
-button.secondary { color: #17433d; background: #e4eeeb; }
-.button-row { display: flex; gap: 10px; margin-top: 16px; }
-.button-row button { flex: 1; }
-.hidden { display: none; }
-.active-order { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 12px; background: #d9f0e7; border: 1px solid #aad7c6; border-radius: 11px; }
-.active-order .eyebrow { margin-bottom: 2px; }
-.active-order strong { font-size: 1.05rem; }
-.outline-button { min-height: 36px; padding: 6px 10px; color: #155748; font-size: .83rem; background: transparent; border: 1px solid #75b39f; }
-.scanner-status { display: flex; gap: 8px; align-items: center; padding: 10px 0 2px; margin-bottom: 0; color: #39665d; font-size: .84rem; font-weight: 700; }
-.status-dot { width: 9px; height: 9px; background: #28a777; border-radius: 50%; box-shadow: 0 0 0 4px #28a77724; }
-.hint { margin-bottom: 0; color: #53716b; font-size: .89rem; line-height: 1.4; }
-.next-field { border-color: #277d6e; box-shadow: 0 0 0 3px #6cb5a520; }
-.section-title-row { display: flex; align-items: center; }
-.section-title-row h2 { margin-bottom: 0; }
-.count { margin-left: auto; color: #47716a; font-size: .87rem; font-weight: 700; }
-.empty-state { padding: 16px 0 5px; margin-bottom: 0; color: #66827c; text-align: center; }
-.scan-list { padding: 0; margin: 12px 0 0; list-style: none; }
-.scan-list li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; padding: 13px 0; border-top: 1px solid #e6eeee; }
-.scan-number { color: #6f8d86; font-weight: 800; }
-.scan-values { display: grid; gap: 4px; font-size: .93rem; }
-.scan-values span { overflow-wrap: anywhere; }
-.scan-values strong { display: inline-block; width: 52px; color: #54736c; font-size: .75rem; letter-spacing: .04em; }
-@media (min-width: 600px) { .app-shell { padding-top: 28px; } .app-header { border-radius: 0 0 28px 28px; } }
+/* ---------- Global theme and layout ---------- */
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #10211f;
+  background: #eef4f2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+}
+
+.app-shell {
+  max-width: 680px;
+  margin: auto;
+  padding: 20px 16px 42px;
+}
+
+/* ---------- Application header ---------- */
+
+.app-header {
+  margin: -20px -16px 24px;
+  padding: 26px 20px 22px;
+  color: white;
+  background: linear-gradient(135deg, #103c37, #176e60);
+  border-radius: 0 0 24px 24px;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: 1.55rem;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  margin-bottom: 14px;
+  font-size: 1.1rem;
+}
+
+.app-header p {
+  margin: 7px 0 0;
+  font-size: 0.95rem;
+  opacity: 0.82;
+}
+
+/* ---------- Card and text styles ---------- */
+
+.card {
+  margin-bottom: 16px;
+  padding: 18px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px #123d3812;
+}
+
+.eyebrow {
+  margin-bottom: 6px;
+  color: #44726a;
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.section-eyebrow {
+  margin-top: 14px;
+}
+
+.hint {
+  margin-bottom: 0;
+  color: #53716b;
+  font-size: 0.89rem;
+  line-height: 1.4;
+}
+
+/* ---------- Form controls ---------- */
+
+label {
+  display: block;
+  margin: 13px 0 6px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 13px;
+  color: #10211f;
+  font: inherit;
+  font-size: 1.05rem;
+  border: 1.5px solid #b8cfca;
+  border-radius: 11px;
+}
+
+input:focus {
+  outline: 3px solid #6cb5a530;
+  border-color: #277d6e;
+}
+
+button {
+  min-height: 48px;
+  padding: 10px 16px;
+  color: white;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  background: #176e60;
+  border: 0;
+  border-radius: 11px;
+}
+
+button.secondary {
+  color: #17433d;
+  background: #e4eeeb;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.button-row button {
+  flex: 1;
+}
+
+.hidden {
+  display: none;
+}
+
+/* ---------- Active scan status ---------- */
+
+.active-order {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: #d9f0e7;
+  border: 1px solid #aad7c6;
+  border-radius: 11px;
+}
+
+.active-order .eyebrow {
+  margin-bottom: 2px;
+}
+
+.active-order strong {
+  font-size: 1.05rem;
+}
+
+.outline-button {
+  min-height: 36px;
+  padding: 6px 10px;
+  color: #155748;
+  font-size: 0.83rem;
+  background: transparent;
+  border: 1px solid #75b39f;
+}
+
+.scanner-status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 0 2px;
+  margin-bottom: 0;
+  color: #39665d;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  background: #28a777;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px #28a77724;
+}
+
+.next-field {
+  border-color: #277d6e;
+  box-shadow: 0 0 0 3px #6cb5a520;
+}
+
+/* ---------- Scanned item list ---------- */
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+}
+
+.section-title-row h2 {
+  margin-bottom: 0;
+}
+
+.count {
+  margin-left: auto;
+  color: #47716a;
+  font-size: 0.87rem;
+  font-weight: 700;
+}
+
+.empty-state {
+  padding: 16px 0 5px;
+  margin-bottom: 0;
+  color: #66827c;
+  text-align: center;
+}
+
+.scan-list {
+  padding: 0;
+  margin: 12px 0 0;
+  list-style: none;
+}
+
+.scan-list li {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 10px;
+  padding: 13px 0;
+  border-top: 1px solid #e6eeee;
+}
+
+.scan-number {
+  color: #6f8d86;
+  font-weight: 800;
+}
+
+.scan-values {
+  display: grid;
+  gap: 4px;
+  font-size: 0.93rem;
+}
+
+.scan-values span {
+  overflow-wrap: anywhere;
+}
+
+.scan-values strong {
+  display: inline-block;
+  width: 52px;
+  color: #54736c;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Larger-screen adjustments ---------- */
+
+@media (min-width: 600px) {
+  .app-shell {
+    padding-top: 28px;
+  }
+
+  .app-header {
+    border-radius: 0 0 28px 28px;
+  }
+}

@@ -1,117 +1,195 @@
-const $ = (id) => document.getElementById(id);
+// Return an element by ID using a descriptive helper name.
+function getElementById(elementId) {
+  return document.getElementById(elementId);
+}
 
-const ui = {
-  ordCard: $('ordCard'),
-  scanCard: $('scanCard'),
-  listCard: $('listCard'),
-  ord: $('ord'),
-  ordValue: $('ordValue'),
-  lot: $('lot'),
-  serial: $('serial'),
-  scanState: $('scanState'),
-  scanHint: $('scanHint'),
-  count: $('count'),
-  empty: $('empty'),
-  list: $('list'),
-  start: $('start'),
-  add: $('add'),
-  clear: $('clear'),
-  newOrd: $('newOrd'),
+// Keep all DOM references together so event handlers can use a clear interface.
+const userInterface = {
+  orderCard: getElementById('ordCard'),
+  scanCard: getElementById('scanCard'),
+  listCard: getElementById('listCard'),
+  orderInput: getElementById('ord'),
+  orderValue: getElementById('ordValue'),
+  lotInput: getElementById('lot'),
+  serialInput: getElementById('serial'),
+  scanState: getElementById('scanState'),
+  scanHint: getElementById('scanHint'),
+  itemCount: getElementById('count'),
+  emptyMessage: getElementById('empty'),
+  itemList: getElementById('list'),
+  startButton: getElementById('start'),
+  addButton: getElementById('add'),
+  clearButton: getElementById('clear'),
+  newOrderButton: getElementById('newOrd')
 };
 
-let activeOrd = '';
+// These values represent the current in-browser scanning session.
+let activeOrderNumber = '';
 let scannedItems = [];
 
+// Escape scanned values before placing them into the rendered item list.
 function escapeHtml(value) {
-  const element = document.createElement('div');
-  element.textContent = value;
-  return element.innerHTML;
+  const temporaryElement = document.createElement('div');
+  temporaryElement.textContent = value;
+  return temporaryElement.innerHTML;
 }
 
-function renderItems() {
-  const count = scannedItems.length;
-  ui.count.textContent = `${count} item${count === 1 ? '' : 's'}`;
-  ui.empty.classList.toggle('hidden', count > 0);
-  ui.list.innerHTML = scannedItems.map((item, index) => `
-    <li><span class="scan-number">${index + 1}</span>
-      <div class="scan-values">
-        <span><strong>LOT</strong>${escapeHtml(item.lot)}</span>
-        <span><strong>SERIAL</strong>${escapeHtml(item.serial)}</span>
-      </div>
-    </li>`).join('');
+// Render the current scanned items and update the empty-state message.
+function renderScannedItems() {
+  const itemCount = scannedItems.length;
+
+  userInterface.itemCount.textContent = `${itemCount} item${
+    itemCount === 1 ? '' : 's'
+  }`;
+  userInterface.emptyMessage.classList.toggle('hidden', itemCount > 0);
+
+  userInterface.itemList.innerHTML = scannedItems
+    .map(
+      (item, index) => `
+        <li>
+          <span class="scan-number">${index + 1}</span>
+          <div class="scan-values">
+            <span>
+              <strong>LOT</strong>${escapeHtml(item.lot)}
+            </span>
+            <span>
+              <strong>SERIAL</strong>${escapeHtml(item.serial)}
+            </span>
+          </div>
+        </li>`
+    )
+    .join('');
 }
 
-function readyForLot() {
-  ui.serial.disabled = true;
-  ui.lot.classList.add('next-field');
-  ui.serial.classList.remove('next-field');
-  ui.scanState.textContent = 'Ready for lot barcode';
+// Reset the scanner state so the next input is a lot number.
+function prepareForLotScan() {
+  userInterface.serialInput.disabled = true;
+  userInterface.lotInput.classList.add('next-field');
+  userInterface.serialInput.classList.remove('next-field');
+  userInterface.scanState.textContent = 'Ready for lot barcode';
 }
 
+// Start a new scanning session after validating the ORD input.
 function startOrder() {
-  const ord = ui.ord.value.trim();
-  if (!ord) return ui.ord.focus();
-  activeOrd = ord;
+  const orderNumber = userInterface.orderInput.value.trim();
+
+  if (!orderNumber) {
+    userInterface.orderInput.focus();
+    return;
+  }
+
+  activeOrderNumber = orderNumber;
   scannedItems = [];
-  ui.ordValue.textContent = activeOrd;
-  ui.ordCard.classList.add('hidden');
-  ui.scanCard.classList.remove('hidden');
-  ui.listCard.classList.remove('hidden');
-  readyForLot();
-  ui.lot.focus();
-  renderItems();
+
+  userInterface.orderValue.textContent = activeOrderNumber;
+  userInterface.orderCard.classList.add('hidden');
+  userInterface.scanCard.classList.remove('hidden');
+  userInterface.listCard.classList.remove('hidden');
+
+  prepareForLotScan();
+  userInterface.lotInput.focus();
+  renderScannedItems();
 }
 
-function updateLotState() {
-  const hasLot = Boolean(ui.lot.value.trim());
-  ui.serial.disabled = !hasLot;
-  ui.lot.classList.toggle('next-field', !hasLot);
-  ui.serial.classList.toggle('next-field', hasLot);
-  ui.scanState.textContent = hasLot ? 'Lot captured — scan serial barcode' : 'Ready for lot barcode';
+// Enable serial scanning only after a lot number has been entered.
+function updateLotInputState() {
+  const hasLotNumber = Boolean(userInterface.lotInput.value.trim());
+
+  userInterface.serialInput.disabled = !hasLotNumber;
+  userInterface.lotInput.classList.toggle('next-field', !hasLotNumber);
+  userInterface.serialInput.classList.toggle('next-field', hasLotNumber);
+  userInterface.scanState.textContent = hasLotNumber
+    ? 'Lot captured — scan serial barcode'
+    : 'Ready for lot barcode';
 }
 
+// Save one lot and serial pair in the current in-browser list.
 function saveItem() {
-  const lot = ui.lot.value.trim();
-  const serial = ui.serial.value.trim();
-  if (!lot) return ui.lot.focus();
-  if (!serial) return ui.serial.focus();
-  scannedItems.unshift({ lot, serial });
-  ui.lot.value = '';
-  ui.serial.value = '';
-  ui.scanHint.textContent = 'Saved. Scan the next lot barcode.';
-  readyForLot();
-  ui.lot.focus();
-  renderItems();
+  const lotNumber = userInterface.lotInput.value.trim();
+  const serialNumber = userInterface.serialInput.value.trim();
+
+  if (!lotNumber) {
+    userInterface.lotInput.focus();
+    return;
+  }
+
+  if (!serialNumber) {
+    userInterface.serialInput.focus();
+    return;
+  }
+
+  scannedItems.unshift({
+    lot: lotNumber,
+    serial: serialNumber
+  });
+
+  userInterface.lotInput.value = '';
+  userInterface.serialInput.value = '';
+  userInterface.scanHint.textContent = 'Saved. Scan the next lot barcode.';
+
+  prepareForLotScan();
+  userInterface.lotInput.focus();
+  renderScannedItems();
 }
 
+// Clear the current lot and serial fields without ending the ORD session.
 function clearFields() {
-  ui.lot.value = '';
-  ui.serial.value = '';
-  readyForLot();
-  ui.lot.focus();
+  userInterface.lotInput.value = '';
+  userInterface.serialInput.value = '';
+  prepareForLotScan();
+  userInterface.lotInput.focus();
 }
 
+// End the current ORD session and return to the initial input screen.
 function finishOrder() {
-  activeOrd = '';
+  activeOrderNumber = '';
   scannedItems = [];
-  ui.ord.value = '';
-  ui.lot.value = '';
-  ui.serial.value = '';
-  ui.scanCard.classList.add('hidden');
-  ui.listCard.classList.add('hidden');
-  ui.ordCard.classList.remove('hidden');
-  ui.ord.focus();
+
+  userInterface.orderInput.value = '';
+  userInterface.lotInput.value = '';
+  userInterface.serialInput.value = '';
+  userInterface.scanCard.classList.add('hidden');
+  userInterface.listCard.classList.add('hidden');
+  userInterface.orderCard.classList.remove('hidden');
+  userInterface.orderInput.focus();
 }
 
-ui.start.addEventListener('click', startOrder);
-ui.ord.addEventListener('keydown', (event) => { if (event.key === 'Enter') startOrder(); });
-ui.lot.addEventListener('input', updateLotState);
-ui.lot.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter' && ui.lot.value.trim()) { event.preventDefault(); ui.serial.focus(); }
-});
-ui.serial.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') { event.preventDefault(); saveItem(); }
-});
-ui.add.addEventListener('click', saveItem);
-ui.clear.addEventListener('click', clearFields);
-ui.newOrd.addEventListener('click', finishOrder);
+// Start the scan session when the user clicks the start button.
+function handleStartButtonClick() {
+  startOrder();
+}
+
+// Barcode scanners commonly submit an input by sending the Enter key.
+function handleOrderKeydown(event) {
+  if (event.key === 'Enter') {
+    startOrder();
+  }
+}
+
+// Move focus to the serial field when a non-empty lot is submitted.
+function handleLotKeydown(event) {
+  const hasLotNumber = Boolean(userInterface.lotInput.value.trim());
+
+  if (event.key === 'Enter' && hasLotNumber) {
+    event.preventDefault();
+    userInterface.serialInput.focus();
+  }
+}
+
+// Save the item when the serial barcode scanner submits the Enter key.
+function handleSerialKeydown(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    saveItem();
+  }
+}
+
+// Register all event handlers after the page markup has loaded.
+userInterface.startButton.addEventListener('click', handleStartButtonClick);
+userInterface.orderInput.addEventListener('keydown', handleOrderKeydown);
+userInterface.lotInput.addEventListener('input', updateLotInputState);
+userInterface.lotInput.addEventListener('keydown', handleLotKeydown);
+userInterface.serialInput.addEventListener('keydown', handleSerialKeydown);
+userInterface.addButton.addEventListener('click', saveItem);
+userInterface.clearButton.addEventListener('click', clearFields);
+userInterface.newOrderButton.addEventListener('click', finishOrder);

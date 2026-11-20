@@ -13,11 +13,33 @@ This project is a mobile-first warehouse scanning application. The scan flow is:
 ## Code quality
 
 - Write production-grade, maintainable code.
+- Always write readable code with clear spacing, line breaks, indentation, and grouping. Never compress or clump HTML, CSS, JavaScript, or Apps Script into difficult-to-read lines.
+- Add concise comments for each logical section and for non-obvious functions, decisions, validation rules, and integrations. Comments must explain the purpose or reasoning and remain accurate as the code changes.
+- If a file format does not support comments, do not add comments that would make the file invalid; preserve the format's valid syntax instead.
 - Use descriptive names; do not use cryptic aliases such as `$` for DOM helpers.
 - Keep HTML, CSS, and JavaScript in separate files.
 - Prefer small, focused functions with one clear responsibility.
 - Avoid unnecessary dependencies for this lightweight prototype.
 - Preserve existing behavior unless the requested change requires otherwise.
+
+## Change handoff commands
+
+- After changing code or completing an adjustment, always provide the synchronization commands in two separate blocks.
+- Always provide the Git block first:
+
+  ```powershell
+  git add .
+  git commit -m "Describe the change"
+  git push
+  ```
+
+- Then provide the Apps Script block:
+
+  ```powershell
+  clasp.cmd push
+  ```
+
+- Explain that `clasp.cmd push` synchronizes Apps Script files such as `Code.js` and `appsscript.json`, but always include the command so the Apps Script project is not forgotten.
 
 ## Frontend standards
 

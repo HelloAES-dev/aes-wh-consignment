@@ -10,17 +10,28 @@
  * - GOOGLE_CLIENT_ID
  */
 
+// Central configuration for the authentication phase.
+// Values that may change by environment are stored in Script Properties instead
+// of being hardcoded in the source file.
 const CONFIG = Object.freeze({
   ACCESS_SHEET_NAME: 'CONFIG : อีเมลที่ได้รับสิทธิ์',
   REQUIRED_PROPERTIES: ['SPREADSHEET_ID', 'GOOGLE_CLIENT_ID']
 });
 
+// Health-check endpoint used to confirm that the web app is reachable.
 function doGet() {
   return ContentService
-    .createTextOutput(JSON.stringify({ success: true, service: 'consignment-backend' }))
+    .createTextOutput(
+      JSON.stringify({
+        success: true,
+        service: 'consignment-backend'
+      })
+    )
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// Main POST endpoint. Authentication is required before any business action
+// is allowed to run.
 function doPost(event) {
   try {
     const payload = parseRequestPayload(event);
@@ -44,6 +55,7 @@ function doPost(event) {
       });
     }
 
+    // Keep the action router explicit so unsupported operations fail safely.
     switch (String(payload.action || '').trim()) {
       case 'authCheck':
         return createJsonResponse({
@@ -68,6 +80,7 @@ function doPost(event) {
   }
 }
 
+// Parse and validate the JSON request body before reading any request fields.
 function parseRequestPayload(event) {
   const contents = event && event.postData && event.postData.contents;
   if (!contents) throw new Error('Request body is missing.');
@@ -80,13 +93,17 @@ function parseRequestPayload(event) {
   return payload;
 }
 
+// Verify the Google Identity Services ID token against Google's token-info
+// endpoint, then validate the issuer, audience, email, and expiration.
 function verifyGoogleIdToken(idToken) {
   if (!idToken) return null;
 
   const clientId = getRequiredScriptProperty('GOOGLE_CLIENT_ID');
   const response = UrlFetchApp.fetch(
     `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`,
-    { muteHttpExceptions: true }
+    {
+      muteHttpExceptions: true
+    }
   );
 
   if (response.getResponseCode() !== 200) return null;
@@ -97,7 +114,8 @@ function verifyGoogleIdToken(idToken) {
   const audience = String(claims.aud || '');
   const expiresAt = Number(claims.exp || 0);
   const emailVerified = String(claims.email_verified).toLowerCase() === 'true';
-  const validIssuer = issuer === 'accounts.google.com' || issuer === 'https://accounts.google.com';
+  const validIssuer =
+    issuer === 'accounts.google.com' || issuer === 'https://accounts.google.com';
   const validAudience = audience === clientId;
   const notExpired = expiresAt > Math.floor(Date.now() / 1000);
 
@@ -111,6 +129,8 @@ function verifyGoogleIdToken(idToken) {
   };
 }
 
+// Find the signed-in user in the authorized-email sheet and return only the
+// fields needed by the backend and frontend.
 function findAuthorizedUser(email) {
   const sheet = getSpreadsheet().getSheetByName(CONFIG.ACCESS_SHEET_NAME);
   if (!sheet) throw new Error(`Missing sheet: ${CONFIG.ACCESS_SHEET_NAME}`);
@@ -121,7 +141,9 @@ function findAuthorizedUser(email) {
   const columns = createHeaderMap(values[0]);
   const requiredHeaders = ['user_id', 'email', 'customer_id', 'role', 'is_active'];
   requiredHeaders.forEach((header) => {
-    if (columns[header] === undefined) throw new Error(`Missing access-sheet column: ${header}`);
+    if (columns[header] === undefined) {
+      throw new Error(`Missing access-sheet column: ${header}`);
+    }
   });
 
   const normalizedEmail = String(email).trim().toLowerCase();
@@ -144,16 +166,20 @@ function findAuthorizedUser(email) {
   return null;
 }
 
+// Open the configured spreadsheet only when a request needs sheet data.
 function getSpreadsheet() {
   return SpreadsheetApp.openById(getRequiredScriptProperty('SPREADSHEET_ID'));
 }
 
+// Read required configuration from Script Properties and fail clearly when it
+// has not been configured in the Apps Script project.
 function getRequiredScriptProperty(name) {
   const value = PropertiesService.getScriptProperties().getProperty(name);
   if (!value) throw new Error(`Missing Script Property: ${name}`);
   return value.trim();
 }
 
+// Convert the header row into a case-insensitive name-to-index lookup table.
 function createHeaderMap(headerRow) {
   return headerRow.reduce((map, header, index) => {
     const normalizedHeader = String(header || '').trim().toLowerCase();
@@ -162,10 +188,13 @@ function createHeaderMap(headerRow) {
   }, {});
 }
 
+// Accept common spreadsheet representations of an active/inactive flag.
 function toBoolean(value) {
   return ['true', '1', 'yes', 'y'].includes(String(value).trim().toLowerCase());
 }
 
+// Return a deliberately limited user object so internal sheet details are not
+// exposed to the browser.
 function sanitizeUserForClient(user) {
   return {
     user_id: user.user_id,
@@ -176,6 +205,7 @@ function sanitizeUserForClient(user) {
   };
 }
 
+// Use one consistent JSON response format for every web-app request.
 function createJsonResponse(body) {
   return ContentService
     .createTextOutput(JSON.stringify(body))
