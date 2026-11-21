@@ -63,6 +63,14 @@ This project is a mobile-first warehouse scanning application. The scan flow is:
 - Keep `docs/DATA_MODEL.md`, `docs/BUSINESS_RULES.md`, `docs/UI_DESIGN.md`, and `docs/TEST_PLAN.md` synchronized with implementation changes.
 - Keep `README.md` updated when the project scope or setup changes.
 
+## Daily project summaries
+
+- When the user types `SUMMARIZE` at the end of the day, summarize the work completed during that day.
+- Save the summary as `docs/project-log/<project_name>_YYYY_MM_DD.md`.
+- Include the date, completed work, decisions, changed files, verification performed, blockers, and next steps.
+- If the daily log already exists, update that same file instead of creating a duplicate.
+- Keep daily summaries as project history; do not treat them as replacement instructions for `AGENTS.md`.
+
 ## Implementation Plan
 
 1. Confirm Git repository.

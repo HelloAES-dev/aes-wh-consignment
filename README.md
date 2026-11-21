@@ -53,10 +53,12 @@ READY_TO_SHIP
 
 ## Documentation map
 
+- `docs/AGENT_BLUEPRINT.md` — reusable project-start blueprint and interview checklist.
 - `docs/DATA_MODEL.md` — sheets, columns, identifiers, and statuses.
 - `docs/BUSINESS_RULES.md` — workflow rules, permissions, and failure behavior.
 - `docs/UI_DESIGN.md` — screens and interaction behavior.
 - `docs/TEST_PLAN.md` — acceptance scenarios before deployment.
+- `docs/project-log/` — daily project summaries created with `SUMMARIZE`.
 - `AGENTS.md` — coding and Codex working instructions.
 
 ## Deliberately postponed
