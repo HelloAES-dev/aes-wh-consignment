@@ -1,5 +1,5 @@
-# Ignore everything by default.
-*
+# Ignore every file and folder at every directory depth by default.
+**/*
 
 # Upload only the Apps Script backend entry point and manifest.
 !Code.js
