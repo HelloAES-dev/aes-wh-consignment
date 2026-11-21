@@ -26,7 +26,7 @@ window.projectProgress = Object.freeze({
     'withdrawal-log': 'planned',
 
     'admin-bootstrap': 'done',
-    'admin-accounts': 'planned',
+    'admin-accounts': 'in_progress',
     'admin-queue': 'planned',
     'admin-approval': 'planned',
     'admin-chat': 'planned',

@@ -1,12 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="th">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#123d38">
-  <meta name="description" content="Mobile warehouse scanner prototype">
-  <title>Warehouse Scan</title>
+  <meta
+    name="description"
+    content="ระบบจัดการสินค้าฝากขายสำหรับพนักงานและผู้ดูแลระบบ"
+  >
+  <title>ระบบสินค้าฝากขาย</title>
 
   <!-- Keep presentation styles in the dedicated stylesheet. -->
   <link rel="stylesheet" href="style.css">
@@ -17,93 +20,132 @@
 
 <body>
   <main class="app-shell">
-    <!-- Application title and short workflow explanation. -->
+    <!-- Application identity remains visible on every screen. -->
     <header class="app-header">
-      <h1>Warehouse Scan</h1>
-      <p>One order. Scan lot, then serial. Repeat.</p>
+      <div>
+        <p class="header-eyebrow">AES Consignment</p>
+        <h1>ระบบสินค้าฝากขาย</h1>
+        <p id="pageDescription">ลงชื่อเข้าใช้เพื่อเริ่มงาน</p>
+      </div>
       <p id="authenticatedUser" class="authenticated-user hidden"></p>
     </header>
 
-    <!-- Authentication must succeed before the scanner becomes available. -->
+    <!-- Authentication must succeed before application data is visible. -->
     <section id="authCard" class="card auth-card">
-      <p class="eyebrow">Secure access</p>
-      <h2>Sign in to continue</h2>
+      <p class="eyebrow">เข้าสู่ระบบอย่างปลอดภัย</p>
+      <h2>ลงชื่อเข้าใช้เพื่อดำเนินการต่อ</h2>
       <p class="hint">
-        Use an approved Google account to access the warehouse scanner.
+        ใช้บัญชี Google ที่ได้รับอนุมัติจากผู้ดูแลระบบ
       </p>
       <div id="googleSignInButton" class="google-sign-in"></div>
-      <p id="authStatus" class="status-message" role="status" aria-live="polite"></p>
+      <p
+        id="authStatus"
+        class="status-message"
+        role="status"
+        aria-live="polite"
+      ></p>
     </section>
 
-    <!-- The first step starts a scanning session for one ORD number. -->
-    <section id="ordCard" class="card hidden">
-      <p class="eyebrow">Start a scan session</p>
-      <h2>Scan the ORD from the paper</h2>
-      <label for="ord">ORD number</label>
-      <input
-        id="ord"
-        autocomplete="off"
-        autocapitalize="characters"
-        placeholder="e.g. ORD2604058"
-        autofocus
-      >
-      <div class="button-row">
-        <button id="start" type="button">Start scanning</button>
-      </div>
+    <!-- The backend role determines which mode cards are rendered here. -->
+    <section id="homeCard" class="card hidden">
+      <p class="eyebrow">เมนูหลัก</p>
+      <h2>เลือกงานที่ต้องการทำ</h2>
+      <p class="hint">
+        ระบบแสดงเฉพาะเมนูที่บัญชีของคุณได้รับสิทธิ์
+      </p>
+      <div id="modeGrid" class="mode-grid"></div>
     </section>
 
-    <!-- This section collects a lot and serial pair for the active ORD. -->
-    <section id="scanCard" class="card hidden">
-      <div class="active-order">
-        <div>
-          <p class="eyebrow">Active ORD</p>
-          <strong id="ordValue"></strong>
-        </div>
-        <button id="newOrd" class="outline-button" type="button">
-          Finish ORD
+    <!-- Receiving and withdrawal will be implemented in later phases. -->
+    <section id="modulePlaceholder" class="card hidden">
+      <button id="placeholderBackButton" class="text-button" type="button">
+        ← กลับเมนูหลัก
+      </button>
+      <p id="placeholderEyebrow" class="eyebrow"></p>
+      <h2 id="placeholderTitle"></h2>
+      <p id="placeholderMessage" class="hint"></p>
+    </section>
+
+    <!-- ADMIN-only account management. Backend authorization is mandatory. -->
+    <section id="adminAccountSection" class="hidden">
+      <div class="section-navigation">
+        <button id="adminBackButton" class="text-button" type="button">
+          ← กลับเมนูหลัก
         </button>
       </div>
 
-      <p class="scanner-status">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span id="scanState">Ready for lot barcode</span>
-      </p>
+      <section class="card">
+        <p class="eyebrow">ผู้ดูแลระบบ</p>
+        <h2>เพิ่มบัญชีที่ได้รับสิทธิ์</h2>
+        <p class="hint">
+          เพิ่มอีเมล กำหนดบทบาท และผูกบัญชีกับลูกค้า
+        </p>
 
-      <p class="eyebrow section-eyebrow">Add an item</p>
-      <h2>Lot first, serial second</h2>
-      <p id="scanHint" class="hint">Scan the lot number barcode.</p>
+        <form id="adminAccountForm" novalidate>
+          <label for="accountEmail">อีเมล Google</label>
+          <input
+            id="accountEmail"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="name@example.com"
+            required
+          >
 
-      <label for="lot">Lot number</label>
-      <input
-        id="lot"
-        autocomplete="off"
-        autocapitalize="characters"
-        placeholder="e.g. 2604587"
-      >
+          <label for="accountRole">บทบาท</label>
+          <select id="accountRole" name="role" required>
+            <option value="CUSTOMER_USER">ผู้เบิกสินค้า</option>
+            <option value="CUSTOMER_ADMIN">ผู้ดูแลฝั่งลูกค้า</option>
+            <option value="RECEIVING_CHECKER">ผู้ตรวจรับสินค้า</option>
+            <option value="ADMIN">ผู้ดูแลระบบ</option>
+          </select>
 
-      <label for="serial">Serial number</label>
-      <input
-        id="serial"
-        autocomplete="off"
-        autocapitalize="characters"
-        placeholder="e.g. TTRE1254"
-        disabled
-      >
+          <div id="customerSelector">
+            <label for="customerSearch">ค้นหาลูกค้า</label>
+            <input
+              id="customerSearch"
+              type="search"
+              autocomplete="off"
+              placeholder="พิมพ์รหัสหรือชื่อลูกค้าอย่างน้อย 2 ตัวอักษร"
+              aria-describedby="customerSearchHelp"
+            >
+            <p id="customerSearchHelp" class="field-help">
+              เลือกลูกค้าจากผลการค้นหาเพื่อป้องกันการกรอกรหัสผิด
+            </p>
+            <div
+              id="customerSearchResults"
+              class="search-results hidden"
+              role="listbox"
+              aria-label="ผลการค้นหาลูกค้า"
+            ></div>
+            <div id="selectedCustomer" class="selected-customer hidden"></div>
+          </div>
 
-      <div class="button-row">
-        <button id="clear" class="secondary" type="button">Clear fields</button>
-        <button id="add" type="button">Save item</button>
-      </div>
-    </section>
+          <button id="createAccountButton" class="full-width-button" type="submit">
+            เพิ่มบัญชี
+          </button>
+          <p
+            id="adminFormStatus"
+            class="form-status"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </form>
+      </section>
 
-    <!-- The current ORD list provides immediate feedback after each scan. -->
-    <section id="listCard" class="card hidden">
-      <div class="section-title-row">
-        <h2>This ORD</h2>
-        <span id="count" class="count">0 items</span>
-      </div>
-      <p id="empty" class="empty-state">No serials scanned for this ORD yet.</p>
-      <ul id="list" class="scan-list"></ul>
+      <section class="card">
+        <div class="section-title-row">
+          <div>
+            <p class="eyebrow">บัญชีทั้งหมด</p>
+            <h2>สิทธิ์การเข้าใช้งาน</h2>
+          </div>
+          <button id="refreshUsersButton" class="outline-button" type="button">
+            โหลดใหม่
+          </button>
+        </div>
+        <p id="userListStatus" class="hint" role="status" aria-live="polite"></p>
+        <div id="authorizedUserList" class="account-list"></div>
+      </section>
     </section>
   </main>
 

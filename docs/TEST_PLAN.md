@@ -44,6 +44,20 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 | ADM-004 | Two admins approve simultaneously | Only one approval succeeds | NOT_RUN |
 | ADM-005 | Customer calls approve endpoint | Backend rejects request | NOT_RUN |
 
+## Authorized-account management
+
+| ID | Scenario | Expected result | Status |
+|---|---|---|---|
+| ACC-001 | Admin searches by customer code | Matching customer code and name appear | NOT_RUN |
+| ACC-002 | Admin searches by customer name | Matching customer code and name appear | NOT_RUN |
+| ACC-003 | Admin creates customer user without customer | Frontend and backend reject request | NOT_RUN |
+| ACC-004 | Admin creates a valid account | One active row with audit fields is appended | NOT_RUN |
+| ACC-005 | Admin submits a duplicate email | Backend rejects duplicate without appending | NOT_RUN |
+| ACC-006 | Non-admin calls account action | Backend rejects request | NOT_RUN |
+| ACC-007 | Admin deactivates another account | `is_active` becomes FALSE; row remains | NOT_RUN |
+| ACC-008 | Admin tries to deactivate own account | Backend rejects request | NOT_RUN |
+| ACC-009 | Two admins add same email simultaneously | Only one account is created | NOT_RUN |
+
 ## Reliability
 
 | ID | Scenario | Expected result | Status |

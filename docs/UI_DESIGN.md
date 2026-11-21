@@ -3,6 +3,7 @@
 ## Design goals
 
 - Mobile-first.
+- Thai is the primary user-facing language; English may remain in technical identifiers and optional secondary text.
 - Fast for barcode scanning.
 - One clear next action.
 - Large touch targets.
@@ -56,7 +57,15 @@ The 2D USB-C scanner should be configured to send an Enter suffix after each QR 
 
 ## Admin screen
 
-The admin screen shows:
+The ADMIN account-management screen shows:
+
+- New-account email input.
+- Role selector.
+- Searchable customer selector using customer code or name.
+- Current authorized accounts with customer names.
+- Activate or deactivate action; no delete action.
+
+The later approval screen will show:
 
 - Pending requests.
 - Customer.
@@ -67,6 +76,30 @@ The admin screen shows:
 - Reject button with reason.
 
 The browser may hide this section for non-admin users, but backend authorization remains mandatory.
+
+## Role-based home screen
+
+Users do not choose whether they are an admin or worker. The backend returns
+the role associated with the authenticated email, and the frontend displays
+only the modes allowed for that role.
+
+```text
+ADMIN
+    -> Admin account management
+    -> Admin approval
+
+RECEIVING_CHECKER
+    -> Receiving
+
+CUSTOMER_USER
+    -> Withdrawal
+
+CUSTOMER_ADMIN
+    -> Withdrawal
+```
+
+Use large mode cards before introducing a sidebar. Add a sidebar only when the
+number of authorized screens makes persistent navigation useful.
 
 ## Google Chat link
 
@@ -83,7 +116,6 @@ New customer requests generate a Chat notification containing a link to the admi
 ## Open decisions
 
 - Final product name and logo.
-- Thai, English, or bilingual interface text.
 - Whether customer users can submit multiple tires in one batch before confirming.
 - Whether receiving requires a selected customer/site before scanning.
 

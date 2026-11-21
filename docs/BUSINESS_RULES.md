@@ -14,7 +14,7 @@ The backend is authoritative. The browser may collect input, but it must not dec
 
 ## Sugar-mill receiving
 
-1. The checker signs in before receiving.
+1. The checker signs in before receiving with an active `RECEIVING_CHECKER` or `ADMIN` account.
 2. The checker scans every tire QR code with the USB-C 2D scanner.
 3. No ORD paper is required at the sugar mill.
 4. The backend resolves the serial to the consignment item.
@@ -44,6 +44,26 @@ The backend is authoritative. The browser may collect input, but it must not dec
 5. An admin can approve only a request currently in `SUBMITTED` status.
 6. Approval records the admin identity and timestamp.
 7. Rejection records a reason.
+
+## Role-based navigation
+
+1. Users do not choose their role in the browser.
+2. The backend returns the role associated with the verified email.
+3. The frontend displays only the modes allowed for that role.
+4. Hiding a mode in the frontend never replaces backend authorization.
+
+## Authorized-account management
+
+1. Only an active `ADMIN` may list, create, activate, or deactivate accounts.
+2. Operational roles are linked to a valid `customer_id` selected from
+   `MASTER : Customer`; the admin must not type an arbitrary customer ID.
+3. A system `ADMIN` is not linked to a customer.
+4. Email addresses are normalized to lowercase and must be unique.
+5. Accounts are never deleted. Revoked access sets `is_active = FALSE` and
+   records `updated_at` and `updated_by`.
+6. An admin cannot deactivate the account currently being used.
+7. Account creation and status changes use a script lock around the final
+   read-check-write operation.
 
 ## Status and deletion
 

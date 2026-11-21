@@ -2,8 +2,9 @@
 
 ## Project status
 
-Prototype phase. GitHub Pages deployment and the first Google Sign-In gate are
-implemented. Transaction workflows are not connected yet.
+Foundation phase. GitHub Pages deployment, Google Sign-In, role-based home
+navigation, and the first ADMIN account-management module are implemented.
+Transaction workflows are not connected yet.
 
 ## Purpose
 
@@ -33,12 +34,16 @@ Warehouse shipment
 - Photos are stored in the company Google Drive or Shared Drive.
 - Google Chat receives one-way notifications for new requests.
 
-## Current authentication prototype
+## Current authentication and access management
 
 - Google Identity Services renders the sign-in button on the root page.
 - Apps Script verifies the Google ID token and checks
   `CONFIG : อีเมลที่ได้รับสิทธิ์`.
-- The scanner remains hidden until the backend confirms an active account.
+- The backend role determines which application modes are visible; workers do
+  not select their own role.
+- An active `ADMIN` can search the customer master, add authorized accounts,
+  and activate or deactivate accounts without deleting rows.
+- Thai is the primary user-facing language.
 
 ## Planned lifecycle
 

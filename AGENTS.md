@@ -43,6 +43,11 @@ This project is a mobile-first warehouse scanning application. The scan flow is:
 
 ## Frontend standards
 
+- Communicate with the project owner in English for development discussions, explanations, reviews, and handoff instructions.
+- Thai is the primary user-facing language because this application is used by workers in Thailand. Use Thai first for labels, buttons, instructions, validation messages, and status feedback.
+- Keep Thai limited to worker-facing application UI and other end-user content unless the project owner explicitly requests Thai elsewhere.
+- Keep technical identifiers such as database columns, API action names, status codes, and source-code comments in clear English unless a Thai explanation is needed for the user.
+- If bilingual text is needed, display Thai first and English second.
 - Use semantic HTML and accessible labels for form controls.
 - Keep the interface usable on mobile screens and with barcode scanners.
 - Validate all user input before saving it.
