@@ -1,20 +1,20 @@
 /* ---------- Shared AES theme tokens ---------- */
 
 :root {
-  --bg-main: #0d1117;
-  --bg-card: #161b22;
-  --bg-card-subtle: #1c2128;
-  --border-color: #2d333b;
-  --text-primary: #e6edf3;
-  --text-muted: #8b949e;
-  --accent-blue: #58a6ff;
-  --accent-green: #238636;
-  --accent-green-hover: #2ea043;
-  --accent-red: #da3633;
-  --accent-orange: #d29922;
-  --input-bg: #0d1117;
-  --header-bg: rgba(22, 27, 34, 0.94);
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --bg-main: #f4f6f8;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f1f3f5;
+  --border-color: #dde1e6;
+  --text-primary: #1f2328;
+  --text-muted: #5f6975;
+  --accent-blue: #1a6fe0;
+  --accent-green: #1e8e3e;
+  --accent-green-hover: #188038;
+  --accent-red: #d93025;
+  --accent-orange: #c77d00;
+  --input-bg: #ffffff;
+  --header-bg: rgba(255, 255, 255, 0.94);
+  --shadow: 0 8px 24px rgba(31, 35, 40, 0.15);
   --radius: 10px;
   color-scheme: light;
 }

@@ -109,7 +109,7 @@ New customer requests generate a Chat notification containing a link to the admi
 
 - Use `Kanit` as the primary user-interface font, matching the existing AES
   warehouse application.
-- Use shared CSS color tokens, layered dark surfaces, subtle borders, compact
+- Use shared CSS color tokens, layered light surfaces, subtle borders, compact
   radii, and clear blue focus states from the existing warehouse design
   language.
 - Use a calm, high-contrast warehouse interface.
