@@ -1,6 +1,12 @@
 // Persist checklist progress locally so the report survives page refreshes.
 const STORAGE_KEY = 'wh-consignment-roadmap-progress';
 
+// The separate progress-data.js file is the Codex-maintained baseline. It lets
+// project work update progress without mixing status data into UI behavior.
+const projectProgressData = window.projectProgress || {
+  taskStatus: {}
+};
+
 // The roadmap separates the three operational flows from the supporting system
 // work underneath them. These tasks are intentionally tool-agnostic.
 const roadmapPhases = [
@@ -215,17 +221,33 @@ const roadmapPhases = [
 let completedTaskIds = loadCompletedTaskIds();
 let activeFilter = 'all';
 
+// Convert Codex-maintained status values into the completed task set used by
+// the checklist and water buckets.
+function getBaselineCompletedTaskIds() {
+  return new Set(
+    Object.entries(projectProgressData.taskStatus)
+      .filter(([, status]) => status === 'done')
+      .map(([taskId]) => taskId)
+  );
+}
+
 // Read progress defensively because localStorage may be unavailable or contain
 // an invalid value after manual browser changes.
 function loadCompletedTaskIds() {
+  const baselineCompletedTaskIds = getBaselineCompletedTaskIds();
+
   try {
     const storedValue = window.localStorage.getItem(STORAGE_KEY);
     const parsedValue = JSON.parse(storedValue || '[]');
 
-    return Array.isArray(parsedValue) ? new Set(parsedValue) : new Set();
+    if (Array.isArray(parsedValue)) {
+      parsedValue.forEach((taskId) => baselineCompletedTaskIds.add(taskId));
+    }
+
+    return baselineCompletedTaskIds;
   } catch (error) {
     console.warn('Roadmap progress could not be loaded:', error);
-    return new Set();
+    return baselineCompletedTaskIds;
   }
 }
 
@@ -244,6 +266,66 @@ function saveCompletedTaskIds() {
 // Return a flat list for progress calculations and filter decisions.
 function getAllTasks() {
   return roadmapPhases.flatMap((phase) => phase.tasks);
+}
+
+// Calculate completion for one operational flow using its phase task IDs.
+function getPhaseCompletionPercentage(phaseId) {
+  const phase = roadmapPhases.find((candidate) => candidate.id === phaseId);
+
+  if (!phase || phase.tasks.length === 0) {
+    return 0;
+  }
+
+  const completedCount = phase.tasks.filter((task) =>
+    completedTaskIds.has(task.id)
+  ).length;
+
+  return Math.round((completedCount / phase.tasks.length) * 100);
+}
+
+// Update one water bucket and optionally animate its wave while filling.
+function updateWaterBucket(bucketId, percentage, shouldAnimate) {
+  const waterFill = document.querySelector(`[data-water-fill="${bucketId}"]`);
+  const percentageOutput = document.querySelector(
+    `[data-bucket-percentage="${bucketId}"]`
+  );
+
+  if (!waterFill || !percentageOutput) {
+    return;
+  }
+
+  waterFill.style.height = `${percentage}%`;
+  percentageOutput.textContent = `${percentage}%`;
+
+  if (!shouldAnimate) {
+    return;
+  }
+
+  // Force a layout read so repeated checklist updates restart the animation.
+  waterFill.classList.remove('is-filling');
+  void waterFill.offsetWidth;
+  waterFill.classList.add('is-filling');
+
+  window.setTimeout(() => {
+    waterFill.classList.remove('is-filling');
+  }, 1200);
+}
+
+// Refresh all three operational flow buckets from the checklist state.
+function updateWaterBuckets(shouldAnimate = false) {
+  const bucketPhaseMap = {
+    warehouse: 'flow-warehouse',
+    receiving: 'flow-receiving',
+    admin: 'flow-admin'
+  };
+
+  Object.entries(bucketPhaseMap).forEach(([bucketId, phaseId]) => {
+    updateWaterBucket(
+      bucketId,
+      getPhaseCompletionPercentage(phaseId),
+      shouldAnimate
+    );
+  });
 }
 
 // Decide whether a task should be visible under the selected filter.
@@ -343,7 +425,7 @@ function createPhaseElement(phase) {
 }
 
 // Render all phase cards and refresh the summary after every change.
-function renderRoadmap() {
+function renderRoadmap({ animateWater = false } = {}) {
   const roadmapList = document.getElementById('roadmapList');
   roadmapList.replaceChildren();
 
@@ -352,6 +434,7 @@ function renderRoadmap() {
   });
 
   updateProgressSummary();
+  updateWaterBuckets(animateWater);
 }
 
 // Update one task, persist it, and redraw the affected checklist state.
@@ -363,7 +446,7 @@ function updateTaskCompletion(taskId, isCompleted) {
   }
 
   saveCompletedTaskIds();
-  renderRoadmap();
+  renderRoadmap({ animateWater: true });
 }
 
 // Update the progress bar and counts shown at the top of the report.
@@ -406,9 +489,9 @@ function resetProgress() {
     return;
   }
 
-  completedTaskIds = new Set();
+  completedTaskIds = getBaselineCompletedTaskIds();
   saveCompletedTaskIds();
-  renderRoadmap();
+  renderRoadmap({ animateWater: true });
 }
 
 // Bind controls after the page has loaded.

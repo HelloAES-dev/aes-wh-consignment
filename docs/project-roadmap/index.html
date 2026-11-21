@@ -20,6 +20,64 @@
       </p>
     </header>
 
+    <!-- These buckets summarize progress across the three business flows. -->
+    <section class="bucket-section" aria-labelledby="bucketTitle">
+      <div class="section-heading">
+        <p class="eyebrow">Three operational flows</p>
+        <h2 id="bucketTitle">Progress by business flow</h2>
+      </div>
+
+      <div class="bucket-grid">
+        <article class="water-bucket" data-bucket-id="warehouse">
+          <div class="bucket-heading">
+            <h3>Warehouse</h3>
+            <output class="bucket-percentage" data-bucket-percentage="warehouse">
+              0%
+            </output>
+          </div>
+          <div class="bucket-visual" aria-hidden="true">
+            <div class="water-fill" data-water-fill="warehouse">
+              <div class="water-wave"></div>
+            </div>
+            <span class="bucket-visual-label">Consignment</span>
+          </div>
+          <p class="bucket-description">Register tires before shipment.</p>
+        </article>
+
+        <article class="water-bucket" data-bucket-id="receiving">
+          <div class="bucket-heading">
+            <h3>Mill operations</h3>
+            <output class="bucket-percentage" data-bucket-percentage="receiving">
+              0%
+            </output>
+          </div>
+          <div class="bucket-visual" aria-hidden="true">
+            <div class="water-fill" data-water-fill="receiving">
+              <div class="water-wave"></div>
+            </div>
+            <span class="bucket-visual-label">Receive + withdraw</span>
+          </div>
+          <p class="bucket-description">Receive every tire and request withdrawals.</p>
+        </article>
+
+        <article class="water-bucket" data-bucket-id="admin">
+          <div class="bucket-heading">
+            <h3>Admin control</h3>
+            <output class="bucket-percentage" data-bucket-percentage="admin">
+              0%
+            </output>
+          </div>
+          <div class="bucket-visual" aria-hidden="true">
+            <div class="water-fill" data-water-fill="admin">
+              <div class="water-wave"></div>
+            </div>
+            <span class="bucket-visual-label">Approve + notify</span>
+          </div>
+          <p class="bucket-description">Manage access and approve requests.</p>
+        </article>
+      </div>
+    </section>
+
     <!-- Progress summary gives owners a quick view before the detailed checklist. -->
     <section class="summary-card" aria-labelledby="summaryTitle">
       <div class="summary-heading">
@@ -69,6 +127,8 @@
     </footer>
   </main>
 
+  <!-- Progress data is maintained separately from rendering behavior. -->
+  <script src="progress-data.js"></script>
   <script src="script.js"></script>
 </body>
 
