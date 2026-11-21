@@ -107,11 +107,18 @@ New customer requests generate a Chat notification containing a link to the admi
 
 ## Visual direction
 
+- Use `Kanit` as the primary user-interface font, matching the existing AES
+  warehouse application.
+- Use shared CSS color tokens, layered dark surfaces, subtle borders, compact
+  radii, and clear blue focus states from the existing warehouse design
+  language.
 - Use a calm, high-contrast warehouse interface.
 - Keep body text at least 16px.
 - Use green for accepted/available, amber for pending, and red for rejected/error.
 - Avoid dense tables on mobile; use stacked cards and scan-result rows.
 - Keep the scanner control visible without scrolling.
+- Keep vertical page scrolling available for long forms and account lists;
+  do not copy the 3D application's full-screen `overflow: hidden` rule.
 
 ## Open decisions
 
