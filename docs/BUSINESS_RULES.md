@@ -61,8 +61,11 @@ The backend is authoritative. The browser may collect input, but it must not dec
 4. Email addresses are normalized to lowercase and must be unique.
 5. Accounts are never deleted. Revoked access sets `is_active = FALSE` and
    records `updated_at` and `updated_by`.
-6. An admin cannot deactivate the account currently being used.
-7. Account creation and status changes use a script lock around the final
+6. An admin may update an existing account's role and linked customer, but the
+   Google email remains immutable.
+7. An admin cannot deactivate or change the access of the account currently
+   being used.
+8. Account creation, access changes, and status changes use a script lock around the final
    read-check-write operation.
 
 ## Status and deletion

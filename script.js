@@ -70,12 +70,15 @@ const userInterface = {
   adminAccountSection: getElementById('adminAccountSection'),
   adminBackButton: getElementById('adminBackButton'),
   adminAccountForm: getElementById('adminAccountForm'),
+  accountFormTitle: getElementById('accountFormTitle'),
+  accountFormDescription: getElementById('accountFormDescription'),
   accountEmail: getElementById('accountEmail'),
   accountRole: getElementById('accountRole'),
   customerSelector: getElementById('customerSelector'),
   customerSearch: getElementById('customerSearch'),
   customerSearchResults: getElementById('customerSearchResults'),
   selectedCustomer: getElementById('selectedCustomer'),
+  cancelAccountEditButton: getElementById('cancelAccountEditButton'),
   createAccountButton: getElementById('createAccountButton'),
   adminFormStatus: getElementById('adminFormStatus'),
   refreshUsersButton: getElementById('refreshUsersButton'),
@@ -88,6 +91,7 @@ const userInterface = {
 let currentIdToken = '';
 let currentUser = null;
 let selectedCustomer = null;
+let editingUserId = '';
 let customerSearchTimer = null;
 let latestCustomerSearchId = 0;
 
@@ -393,7 +397,7 @@ async function handleAdminAccountSubmit(event) {
   const role = userInterface.accountRole.value;
   const customerRequired = APP_CONFIG.CUSTOMER_BOUND_ROLES.includes(role);
 
-  if (!userInterface.accountEmail.validity.valid) {
+  if (!editingUserId && !userInterface.accountEmail.validity.valid) {
     setFormStatus('กรุณากรอกอีเมลให้ถูกต้อง', 'error');
     userInterface.accountEmail.focus();
     return;
@@ -406,16 +410,26 @@ async function handleAdminAccountSubmit(event) {
   }
 
   setAdminFormLoading(true);
-  setFormStatus('กำลังเพิ่มบัญชี...');
+  setFormStatus(
+    editingUserId ? 'กำลังบันทึกการแก้ไข...' : 'กำลังเพิ่มบัญชี...'
+  );
 
   try {
-    const result = await sendBackendRequest('adminCreateUser', {
-      user: {
-        email,
-        role,
-        customerId: selectedCustomer ? selectedCustomer.customer_id : ''
-      }
-    });
+    const userAccess = {
+      role,
+      customerId: selectedCustomer ? selectedCustomer.customer_id : ''
+    };
+    const result = editingUserId
+      ? await sendBackendRequest('adminUpdateUserAccess', {
+          userId: editingUserId,
+          user: userAccess
+        })
+      : await sendBackendRequest('adminCreateUser', {
+          user: {
+            ...userAccess,
+            email
+          }
+        });
 
     setFormStatus(result.message, 'success');
     resetAdminAccountForm();
@@ -431,13 +445,53 @@ function setAdminFormLoading(isLoading) {
   userInterface.createAccountButton.disabled = isLoading;
   userInterface.createAccountButton.textContent = isLoading
     ? 'กำลังบันทึก...'
-    : 'เพิ่มบัญชี';
+    : editingUserId
+      ? 'บันทึกการแก้ไข'
+      : 'เพิ่มบัญชี';
+  userInterface.cancelAccountEditButton.disabled = isLoading;
 }
 
 function resetAdminAccountForm() {
+  editingUserId = '';
   userInterface.adminAccountForm.reset();
+  userInterface.accountEmail.disabled = false;
+  userInterface.accountFormTitle.textContent = 'เพิ่มบัญชีที่ได้รับสิทธิ์';
+  userInterface.accountFormDescription.textContent =
+    'เพิ่มอีเมล กำหนดบทบาท และผูกบัญชีกับลูกค้า';
+  userInterface.createAccountButton.textContent = 'เพิ่มบัญชี';
+  userInterface.cancelAccountEditButton.classList.add('hidden');
   clearSelectedCustomer();
   updateCustomerSelectorVisibility();
+}
+
+// Reuse the account form for editing while keeping the Google email immutable.
+function startEditingUserAccess(user) {
+  editingUserId = user.user_id;
+  setFormStatus('');
+  clearSelectedCustomer();
+
+  userInterface.accountFormTitle.textContent = 'แก้ไขสิทธิ์ผู้ใช้งาน';
+  userInterface.accountFormDescription.textContent =
+    'แก้ไขบทบาทและลูกค้าที่ผูกกับบัญชี โดยไม่เปลี่ยนอีเมล';
+  userInterface.accountEmail.value = user.email;
+  userInterface.accountEmail.disabled = true;
+  userInterface.accountRole.value = user.role;
+  userInterface.createAccountButton.textContent = 'บันทึกการแก้ไข';
+  userInterface.cancelAccountEditButton.classList.remove('hidden');
+
+  updateCustomerSelectorVisibility();
+
+  if (user.customer_id) {
+    selectCustomer({
+      customer_id: user.customer_id,
+      customer_name: user.customer_name || 'ไม่พบชื่อลูกค้า'
+    });
+  }
+
+  userInterface.adminAccountForm.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
 }
 
 async function loadAuthorizedUsers() {
@@ -479,8 +533,11 @@ function createAuthorizedUserCard(user) {
   const email = document.createElement('strong');
   const metadata = document.createElement('p');
   const customer = document.createElement('p');
-  const actionButton = document.createElement('button');
+  const actions = document.createElement('div');
+  const editButton = document.createElement('button');
+  const activeStatusButton = document.createElement('button');
   const roleLabel = ROLE_LABELS[user.role] || user.role;
+  const isCurrentUser = user.user_id === currentUser.user_id;
 
   card.className = `account-item ${user.is_active ? '' : 'is-inactive'}`.trim();
   information.className = 'account-information';
@@ -492,21 +549,35 @@ function createAuthorizedUserCard(user) {
     ? `${user.customer_id} — ${user.customer_name || 'ไม่พบชื่อลูกค้า'}`
     : 'ไม่ผูกกับลูกค้า';
 
-  actionButton.type = 'button';
-  actionButton.className = user.is_active
+  actions.className = 'account-actions';
+
+  editButton.type = 'button';
+  editButton.className = 'outline-button';
+  editButton.textContent = 'แก้ไขสิทธิ์';
+  editButton.disabled = isCurrentUser;
+  editButton.title = isCurrentUser
+    ? 'ไม่สามารถแก้ไขสิทธิ์บัญชีที่กำลังใช้งานอยู่'
+    : '';
+  editButton.addEventListener('click', () => {
+    startEditingUserAccess(user);
+  });
+
+  activeStatusButton.type = 'button';
+  activeStatusButton.className = user.is_active
     ? 'danger-outline-button'
     : 'success-outline-button';
-  actionButton.textContent = user.is_active ? 'ปิดสิทธิ์' : 'เปิดสิทธิ์';
-  actionButton.disabled = user.user_id === currentUser.user_id;
-  actionButton.title = actionButton.disabled
+  activeStatusButton.textContent = user.is_active ? 'ปิดสิทธิ์' : 'เปิดสิทธิ์';
+  activeStatusButton.disabled = isCurrentUser;
+  activeStatusButton.title = activeStatusButton.disabled
     ? 'ไม่สามารถปิดสิทธิ์บัญชีที่กำลังใช้งานอยู่'
     : '';
-  actionButton.addEventListener('click', () => {
+  activeStatusButton.addEventListener('click', () => {
     confirmAndSetUserActive(user, !user.is_active);
   });
 
   information.append(email, metadata, customer);
-  card.append(information, actionButton);
+  actions.append(editButton, activeStatusButton);
+  card.append(information, actions);
   return card;
 }
 
@@ -550,5 +621,9 @@ userInterface.customerSearch.addEventListener(
 userInterface.adminAccountForm.addEventListener(
   'submit',
   handleAdminAccountSubmit
+);
+userInterface.cancelAccountEditButton.addEventListener(
+  'click',
+  resetAdminAccountForm
 );
 userInterface.refreshUsersButton.addEventListener('click', loadAuthorizedUsers);

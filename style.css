@@ -252,6 +252,23 @@ button:focus-visible {
   border-radius: 8px;
 }
 
+.form-action-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 20px;
+}
+
+.form-action-row .full-width-button {
+  flex: 1;
+  width: auto;
+  margin-top: 0;
+}
+
+.form-action-row .outline-button {
+  flex: 1;
+}
+
 .full-width-button:hover:not(:disabled) {
   background: var(--accent-green-hover);
   border-color: var(--accent-green-hover);
@@ -442,6 +459,32 @@ button:focus-visible {
 
 /* ---------- Authorized account list ---------- */
 
+/* The admin workspace carries more detailed information, so it uses a larger
+   type scale than the compact scanner-oriented screens. */
+#adminAccountSection h2 {
+  font-size: 1.45rem;
+}
+
+#adminAccountSection .eyebrow {
+  font-size: 0.84rem;
+}
+
+#adminAccountSection .hint,
+#adminAccountSection .field-help,
+#adminAccountSection .form-status {
+  font-size: 1rem;
+}
+
+#adminAccountSection label {
+  font-size: 1rem;
+}
+
+#adminAccountSection input,
+#adminAccountSection select,
+#adminAccountSection button {
+  font-size: 1.05rem;
+}
+
 .section-title-row {
   display: flex;
   gap: 12px;
@@ -479,9 +522,16 @@ button:focus-visible {
   min-width: 0;
 }
 
+.account-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
 .account-information strong {
   display: block;
   overflow-wrap: anywhere;
+  font-size: 1.08rem;
   font-weight: 500;
 }
 
@@ -489,7 +539,7 @@ button:focus-visible {
 .account-customer {
   margin: 4px 0 0;
   color: var(--text-muted);
-  font-size: 0.84rem;
+  font-size: 0.95rem;
   line-height: 1.4;
 }
 
@@ -528,5 +578,10 @@ button:focus-visible {
 
   .account-item button {
     width: 100%;
+  }
+
+  .account-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 }

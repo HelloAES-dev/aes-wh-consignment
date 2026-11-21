@@ -57,6 +57,10 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 | ACC-007 | Admin deactivates another account | `is_active` becomes FALSE; row remains | NOT_RUN |
 | ACC-008 | Admin tries to deactivate own account | Backend rejects request | NOT_RUN |
 | ACC-009 | Two admins add same email simultaneously | Only one account is created | NOT_RUN |
+| ACC-010 | Admin changes a user from withdrawal to receiving | Role and audit fields update; email remains unchanged | NOT_RUN |
+| ACC-011 | Admin changes a customer-bound role without selecting customer | Frontend and backend reject request | NOT_RUN |
+| ACC-012 | Admin changes an account to ADMIN | Role updates and customer ID is cleared | NOT_RUN |
+| ACC-013 | Admin tries to change own access | Backend rejects request | NOT_RUN |
 
 ## Reliability
 

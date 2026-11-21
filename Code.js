@@ -96,6 +96,15 @@ function doPost(event) {
           return createAuthorizedUser(payload.user, authorizedUser);
         });
 
+      case 'adminUpdateUserAccess':
+        return handleAdminAction(authorizedUser, function () {
+          return updateAuthorizedUserAccess(
+            payload.userId,
+            payload.user,
+            authorizedUser
+          );
+        });
+
       case 'adminSetUserActive':
         return handleAdminAction(authorizedUser, function () {
           return setAuthorizedUserActive(
@@ -348,6 +357,85 @@ function createAuthorizedUser(requestedUser, requestingAdmin) {
   }
 }
 
+// Update an existing account's role and customer assignment without changing
+// its Google email or deleting its audit history.
+function updateAuthorizedUserAccess(userId, requestedUser, requestingAdmin) {
+  const normalizedUserId = String(userId || '').trim();
+  const normalizedAccess = normalizeRequestedAccess(requestedUser);
+  const validationError = validateRequestedAccess(normalizedAccess);
+
+  if (!normalizedUserId) {
+    return {
+      success: false,
+      code: 'USER_ID_REQUIRED',
+      message: 'ไม่พบรหัสผู้ใช้งาน'
+    };
+  }
+
+  // Prevent an admin from accidentally removing the permission needed to
+  // repair account configuration.
+  if (normalizedUserId === requestingAdmin.user_id) {
+    return {
+      success: false,
+      code: 'SELF_ACCESS_CHANGE_NOT_ALLOWED',
+      message: 'ผู้ดูแลระบบไม่สามารถแก้ไขสิทธิ์บัญชีของตนเองได้'
+    };
+  }
+
+  if (validationError) {
+    return validationError;
+  }
+
+  if (
+    normalizedAccess.customer_id &&
+    !customerIdExists(normalizedAccess.customer_id)
+  ) {
+    return {
+      success: false,
+      code: 'CUSTOMER_NOT_FOUND',
+      message: 'ไม่พบรหัสลูกค้าที่เลือกในข้อมูล Master'
+    };
+  }
+
+  const scriptLock = LockService.getScriptLock();
+
+  try {
+    scriptLock.waitLock(10000);
+
+    // Re-read the row after acquiring the lock so concurrent changes are not
+    // overwritten with stale browser data.
+    const accessData = getAccessSheetData();
+    const targetUser = findAuthorizedUserById(accessData, normalizedUserId);
+
+    if (!targetUser) {
+      return {
+        success: false,
+        code: 'USER_NOT_FOUND',
+        message: 'ไม่พบบัญชีผู้ใช้งานที่ต้องการแก้ไข'
+      };
+    }
+
+    const updatedRow = accessData.values[targetUser.row_number - 1].slice();
+    updatedRow[accessData.columns.role] = normalizedAccess.role;
+    updatedRow[accessData.columns.customer_id] = normalizedAccess.customer_id;
+    updatedRow[accessData.columns.updated_at] = new Date();
+    updatedRow[accessData.columns.updated_by] = requestingAdmin.email;
+
+    accessData.sheet
+      .getRange(targetUser.row_number, 1, 1, updatedRow.length)
+      .setValues([updatedRow]);
+
+    return {
+      success: true,
+      message: 'แก้ไขสิทธิ์บัญชีเรียบร้อยแล้ว'
+    };
+  } finally {
+    if (scriptLock.hasLock()) {
+      scriptLock.releaseLock();
+    }
+  }
+}
+
 // Activate or deactivate an authorized account without deleting its history.
 function setAuthorizedUserActive(userId, isActive, requestingAdmin) {
   const normalizedUserId = String(userId || '').trim();
@@ -428,11 +516,27 @@ function normalizeRequestedUser(requestedUser) {
   const safeUser = requestedUser && typeof requestedUser === 'object'
     ? requestedUser
     : {};
+  const normalizedAccess = normalizeRequestedAccess(safeUser);
 
   return {
     email: normalizeEmail(safeUser.email),
-    customer_id: String(safeUser.customerId || '').trim(),
-    role: String(safeUser.role || '').trim().toUpperCase()
+    customer_id: normalizedAccess.customer_id,
+    role: normalizedAccess.role
+  };
+}
+
+function normalizeRequestedAccess(requestedUser) {
+  const safeUser = requestedUser && typeof requestedUser === 'object'
+    ? requestedUser
+    : {};
+
+  const role = String(safeUser.role || '').trim().toUpperCase();
+  const customerId = String(safeUser.customerId || '').trim();
+
+  return {
+    role: role,
+    // System ADMIN accounts are intentionally independent of a customer.
+    customer_id: role === 'ADMIN' ? '' : customerId
   };
 }
 
@@ -447,6 +551,10 @@ function validateRequestedUser(user) {
     };
   }
 
+  return validateRequestedAccess(user);
+}
+
+function validateRequestedAccess(user) {
   if (!CONFIG.ALLOWED_ROLES.includes(user.role)) {
     return {
       success: false,

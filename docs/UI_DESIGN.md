@@ -63,7 +63,11 @@ The ADMIN account-management screen shows:
 - Role selector.
 - Searchable customer selector using customer code or name.
 - Current authorized accounts with customer names.
+- Edit-access action for changing the role and linked customer while keeping
+  the Google email unchanged.
 - Activate or deactivate action; no delete action.
+- A larger type scale for headings, labels, form controls, account details, and
+  actions so the information remains comfortable to read on laptop screens.
 
 The later approval screen will show:
 

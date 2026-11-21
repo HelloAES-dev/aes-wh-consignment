@@ -84,8 +84,8 @@
 
       <section class="card">
         <p class="eyebrow">ผู้ดูแลระบบ</p>
-        <h2>เพิ่มบัญชีที่ได้รับสิทธิ์</h2>
-        <p class="hint">
+        <h2 id="accountFormTitle">เพิ่มบัญชีที่ได้รับสิทธิ์</h2>
+        <p id="accountFormDescription" class="hint">
           เพิ่มอีเมล กำหนดบทบาท และผูกบัญชีกับลูกค้า
         </p>
 
@@ -129,9 +129,22 @@
             <div id="selectedCustomer" class="selected-customer hidden"></div>
           </div>
 
-          <button id="createAccountButton" class="full-width-button" type="submit">
-            เพิ่มบัญชี
-          </button>
+          <div class="form-action-row">
+            <button
+              id="cancelAccountEditButton"
+              class="outline-button hidden"
+              type="button"
+            >
+              ยกเลิกการแก้ไข
+            </button>
+            <button
+              id="createAccountButton"
+              class="full-width-button"
+              type="submit"
+            >
+              เพิ่มบัญชี
+            </button>
+          </div>
           <p
             id="adminFormStatus"
             class="form-status"
