@@ -28,5 +28,6 @@ desktop.ini
 .vscode/
 .idea/
 
-# Local clasp credentials
+# Local clasp credentials and project binding
 .clasprc.json
+.clasp.json

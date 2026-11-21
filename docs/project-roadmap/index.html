@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Warehouse consignment project progress checklist">
+  <title>Warehouse Consignment Roadmap</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="roadmap-shell">
+    <!-- The header explains the purpose of this checklist to project owners. -->
+    <header class="page-header">
+      <p class="eyebrow">Project progress report</p>
+      <h1>Warehouse Consignment System</h1>
+      <p class="lead">
+        Three operational flows, supported by one secure backend and clear data rules.
+      </p>
+    </header>
+
+    <!-- Progress summary gives owners a quick view before the detailed checklist. -->
+    <section class="summary-card" aria-labelledby="summaryTitle">
+      <div class="summary-heading">
+        <div>
+          <p class="eyebrow">Current progress</p>
+          <h2 id="summaryTitle">Implementation roadmap</h2>
+        </div>
+        <output id="progressPercentage" class="progress-percentage">0%</output>
+      </div>
+
+      <progress id="overallProgress" max="100" value="0">
+        0% complete
+      </progress>
+
+      <p id="progressSummary" class="progress-summary">
+        0 of 0 checklist items completed
+      </p>
+    </section>
+
+    <!-- Filters make the checklist easier to use during progress meetings. -->
+    <nav class="filter-bar" aria-label="Checklist filters">
+      <button class="filter-button is-active" type="button" data-filter="all">
+        All
+      </button>
+      <button class="filter-button" type="button" data-filter="remaining">
+        Remaining
+      </button>
+      <button class="filter-button" type="button" data-filter="completed">
+        Completed
+      </button>
+      <button id="printButton" class="secondary-button" type="button">
+        Print report
+      </button>
+    </nav>
+
+    <!-- JavaScript renders the phases and checklist tasks here. -->
+    <section id="roadmapList" class="roadmap-list" aria-live="polite"></section>
+
+    <footer class="page-footer">
+      <p>
+        This checklist is a planning and reporting tool. It does not modify
+        production data or Google Sheets.
+      </p>
+      <button id="resetProgressButton" class="text-button" type="button">
+        Reset checklist progress
+      </button>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
