@@ -54,7 +54,7 @@
       ></p>
     </section>
 
-    <!-- The backend role determines which mode cards are rendered here. -->
+    <!-- Backend permissions determine which mode cards are rendered here. -->
     <section id="homeCard" class="card hidden">
       <p class="eyebrow">เมนูหลัก</p>
       <h2>เลือกงานที่ต้องการทำ</h2>
@@ -86,7 +86,7 @@
         <p class="eyebrow">ผู้ดูแลระบบ</p>
         <h2 id="accountFormTitle">เพิ่มบัญชีที่ได้รับสิทธิ์</h2>
         <p id="accountFormDescription" class="hint">
-          เพิ่มอีเมล กำหนดบทบาท และผูกบัญชีกับลูกค้า
+          เพิ่มอีเมล กำหนดสิทธิ์ และผูกบัญชีกับลูกค้า
         </p>
 
         <form id="adminAccountForm" novalidate>
@@ -100,13 +100,45 @@
             required
           >
 
-          <label for="accountRole">บทบาท</label>
-          <select id="accountRole" name="role" required>
-            <option value="CUSTOMER_USER">ผู้เบิกสินค้า</option>
-            <option value="CUSTOMER_ADMIN">ผู้ดูแลฝั่งลูกค้า</option>
-            <option value="RECEIVING_CHECKER">ผู้ตรวจรับสินค้า</option>
-            <option value="ADMIN">ผู้ดูแลระบบ</option>
-          </select>
+          <fieldset id="permissionSelector" class="permission-fieldset">
+            <legend>สิทธิ์การใช้งาน</legend>
+
+            <label class="permission-option" for="permissionWithdraw">
+              <input
+                id="permissionWithdraw"
+                name="can_withdraw"
+                type="checkbox"
+              >
+              <span>
+                <strong>ผู้เบิกสินค้า</strong>
+                <small>เข้าใช้งานโมดูลเบิกสินค้า</small>
+              </span>
+            </label>
+
+            <label class="permission-option" for="permissionReceive">
+              <input
+                id="permissionReceive"
+                name="can_receive"
+                type="checkbox"
+              >
+              <span>
+                <strong>ผู้ตรวจรับสินค้า</strong>
+                <small>เข้าใช้งานโมดูลรับสินค้า</small>
+              </span>
+            </label>
+
+            <label class="permission-option" for="permissionAdmin">
+              <input
+                id="permissionAdmin"
+                name="is_admin"
+                type="checkbox"
+              >
+              <span>
+                <strong>ผู้ดูแลระบบ</strong>
+                <small>จัดการบัญชีและงานผู้ดูแลระบบ</small>
+              </span>
+            </label>
+          </fieldset>
 
           <div id="customerSelector">
             <label for="customerSearch">ค้นหาลูกค้า</label>

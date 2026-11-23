@@ -60,10 +60,10 @@ The 2D USB-C scanner should be configured to send an Enter suffix after each QR 
 The ADMIN account-management screen shows:
 
 - New-account email input.
-- Role selector.
+- Permission checkboxes for withdrawal, receiving, and internal ADMIN access.
 - Searchable customer selector using customer code or name.
 - Current authorized accounts with customer names.
-- Edit-access action for changing the role and linked customer while keeping
+- Edit-access action for changing permissions and the linked customer while keeping
   the Google email unchanged.
 - Activate or deactivate action; no delete action.
 - A larger type scale for headings, labels, form controls, account details, and
@@ -81,24 +81,21 @@ The later approval screen will show:
 
 The browser may hide this section for non-admin users, but backend authorization remains mandatory.
 
-## Role-based home screen
+## Permission-based home screen
 
 Users do not choose whether they are an admin or worker. The backend returns
-the role associated with the authenticated email, and the frontend displays
-only the modes allowed for that role.
+the permissions associated with the authenticated email, and the frontend
+displays every allowed mode.
 
 ```text
-ADMIN
+is_admin = TRUE
     -> Admin account management
     -> Admin approval
 
-RECEIVING_CHECKER
+can_receive = TRUE
     -> Receiving
 
-CUSTOMER_USER
-    -> Withdrawal
-
-CUSTOMER_ADMIN
+can_withdraw = TRUE
     -> Withdrawal
 ```
 

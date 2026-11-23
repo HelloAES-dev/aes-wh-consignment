@@ -18,13 +18,16 @@ MASTER : Stock By Lot
 
 ## Sheet: `CONFIG : อีเมลที่ได้รับสิทธิ์`
 
-This sheet maps authenticated Google accounts to customers and roles.
+This sheet maps authenticated Google accounts to customers and permissions.
 
 ```text
 user_id
 email
 customer_id
 role
+can_withdraw
+can_receive
+is_admin
 is_active
 created_at
 created_by
@@ -32,18 +35,22 @@ updated_at
 updated_by
 ```
 
-Recommended roles:
+Permission meanings:
 
 ```text
-CUSTOMER_USER
-CUSTOMER_ADMIN
-RECEIVING_CHECKER
-ADMIN
+can_withdraw = TRUE  -> access the withdrawal module
+can_receive = TRUE   -> access the receiving module
+is_admin = TRUE      -> access internal ADMIN functions
 ```
 
-`RECEIVING_CHECKER` is used by sugar-mill workers who receive tires by serial
-QR scan. The frontend must display capabilities from the backend role instead
-of asking users to choose a role after sign-in.
+One email remains one row and may have more than one permission. The frontend
+must display capabilities returned by the backend instead of asking users to
+choose access after sign-in.
+
+The `role` column is temporarily retained for migration compatibility. The
+backend prefers explicit permission columns and falls back to `role` only when
+all three permission cells are blank. Remove `role` only after every existing
+account has been migrated and tested.
 
 ## Sheet: `MAIN : สินค้าฝากขาย`
 

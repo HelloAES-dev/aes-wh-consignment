@@ -10,24 +10,13 @@
  * - GOOGLE_CLIENT_ID
  */
 
-// Central configuration keeps sheet names, headers, and allowed roles in one
-// readable location. Environment-specific IDs remain in Script Properties.
+// Central configuration keeps sheet and header names in one readable location.
+// Environment-specific IDs remain in Script Properties.
 const CONFIG = Object.freeze({
   ACCESS_SHEET_NAME: 'CONFIG : อีเมลที่ได้รับสิทธิ์',
   CUSTOMER_MASTER_SHEET_NAME: 'MASTER : Customer',
   CUSTOMER_CODE_HEADER: 'รหัสลูกค้า',
-  CUSTOMER_NAME_HEADER: 'ชื่อลูกค้า',
-  ALLOWED_ROLES: Object.freeze([
-    'CUSTOMER_USER',
-    'CUSTOMER_ADMIN',
-    'RECEIVING_CHECKER',
-    'ADMIN'
-  ]),
-  CUSTOMER_BOUND_ROLES: Object.freeze([
-    'CUSTOMER_USER',
-    'CUSTOMER_ADMIN',
-    'RECEIVING_CHECKER'
-  ])
+  CUSTOMER_NAME_HEADER: 'ชื่อลูกค้า'
 });
 
 // Health-check endpoint used to confirm that the web app is reachable.
@@ -133,7 +122,7 @@ function doPost(event) {
 // Run one action only after confirming that the authenticated account is an
 // active ADMIN. UI visibility is never treated as an authorization boundary.
 function handleAdminAction(authorizedUser, actionHandler) {
-  if (authorizedUser.role !== 'ADMIN' || !authorizedUser.is_active) {
+  if (!authorizedUser.permissions.is_admin || !authorizedUser.is_active) {
     return createErrorResponse(
       'ADMIN_REQUIRED',
       'เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถดำเนินการนี้ได้'
@@ -242,7 +231,7 @@ function listAuthorizedUsers() {
       email: user.email,
       customer_id: user.customer_id,
       customer_name: customerNameById[user.customer_id] || '',
-      role: user.role,
+      permissions: user.permissions,
       is_active: user.is_active
     });
   }
@@ -332,6 +321,10 @@ function createAuthorizedUser(requestedUser, requestingAdmin) {
       email: normalizedUser.email,
       customer_id: normalizedUser.customer_id,
       role: normalizedUser.role,
+      can_withdraw: normalizedUser.permissions.can_withdraw,
+      can_receive: normalizedUser.permissions.can_receive,
+      is_admin: normalizedUser.permissions.is_admin,
+      permissions: normalizedUser.permissions,
       is_active: true,
       created_at: timestamp,
       created_by: requestingAdmin.email,
@@ -357,8 +350,8 @@ function createAuthorizedUser(requestedUser, requestingAdmin) {
   }
 }
 
-// Update an existing account's role and customer assignment without changing
-// its Google email or deleting its audit history.
+// Update an existing account's permissions and customer assignment without
+// changing its Google email or deleting its audit history.
 function updateAuthorizedUserAccess(userId, requestedUser, requestingAdmin) {
   const normalizedUserId = String(userId || '').trim();
   const normalizedAccess = normalizeRequestedAccess(requestedUser);
@@ -418,6 +411,12 @@ function updateAuthorizedUserAccess(userId, requestedUser, requestingAdmin) {
     const updatedRow = accessData.values[targetUser.row_number - 1].slice();
     updatedRow[accessData.columns.role] = normalizedAccess.role;
     updatedRow[accessData.columns.customer_id] = normalizedAccess.customer_id;
+    updatedRow[accessData.columns.can_withdraw] =
+      normalizedAccess.permissions.can_withdraw;
+    updatedRow[accessData.columns.can_receive] =
+      normalizedAccess.permissions.can_receive;
+    updatedRow[accessData.columns.is_admin] =
+      normalizedAccess.permissions.is_admin;
     updatedRow[accessData.columns.updated_at] = new Date();
     updatedRow[accessData.columns.updated_by] = requestingAdmin.email;
 
@@ -521,7 +520,8 @@ function normalizeRequestedUser(requestedUser) {
   return {
     email: normalizeEmail(safeUser.email),
     customer_id: normalizedAccess.customer_id,
-    role: normalizedAccess.role
+    role: normalizedAccess.role,
+    permissions: normalizedAccess.permissions
   };
 }
 
@@ -530,14 +530,52 @@ function normalizeRequestedAccess(requestedUser) {
     ? requestedUser
     : {};
 
-  const role = String(safeUser.role || '').trim().toUpperCase();
+  const permissionSource =
+    safeUser.permissions && typeof safeUser.permissions === 'object'
+      ? safeUser.permissions
+      : safeUser;
+  const permissions = {
+    can_withdraw:
+      permissionSource.canWithdraw === true ||
+      permissionSource.can_withdraw === true,
+    can_receive:
+      permissionSource.canReceive === true ||
+      permissionSource.can_receive === true,
+    is_admin:
+      permissionSource.isAdmin === true ||
+      permissionSource.is_admin === true
+  };
   const customerId = String(safeUser.customerId || '').trim();
 
   return {
-    role: role,
-    // System ADMIN accounts are intentionally independent of a customer.
-    customer_id: role === 'ADMIN' ? '' : customerId
+    permissions: permissions,
+    // Internal ADMIN accounts are intentionally independent of a customer.
+    customer_id: permissions.is_admin ? '' : customerId,
+    // Keep a readable legacy value until the role column is retired.
+    role: createLegacyRoleValue(permissions)
   };
+}
+
+// Populate the deprecated role column during migration so Sheet readers can
+// still understand the account at a glance.
+function createLegacyRoleValue(permissions) {
+  if (permissions.is_admin) {
+    return 'ADMIN';
+  }
+
+  if (permissions.can_withdraw && permissions.can_receive) {
+    return 'MULTI_PERMISSION';
+  }
+
+  if (permissions.can_receive) {
+    return 'RECEIVING_CHECKER';
+  }
+
+  if (permissions.can_withdraw) {
+    return 'CUSTOMER_USER';
+  }
+
+  return '';
 }
 
 function validateRequestedUser(user) {
@@ -555,22 +593,29 @@ function validateRequestedUser(user) {
 }
 
 function validateRequestedAccess(user) {
-  if (!CONFIG.ALLOWED_ROLES.includes(user.role)) {
+  const permissions = user.permissions;
+  const hasAnyPermission =
+    permissions.can_withdraw ||
+    permissions.can_receive ||
+    permissions.is_admin;
+
+  if (!hasAnyPermission) {
     return {
       success: false,
-      code: 'INVALID_ROLE',
-      message: 'บทบาทผู้ใช้งานไม่ถูกต้อง'
+      code: 'PERMISSION_REQUIRED',
+      message: 'กรุณาเลือกสิทธิ์อย่างน้อยหนึ่งรายการ'
     };
   }
 
   if (
-    CONFIG.CUSTOMER_BOUND_ROLES.includes(user.role) &&
+    (permissions.can_withdraw || permissions.can_receive) &&
+    !permissions.is_admin &&
     !user.customer_id
   ) {
     return {
       success: false,
       code: 'CUSTOMER_REQUIRED',
-      message: 'กรุณาเลือกลูกค้าสำหรับบทบาทนี้'
+      message: 'กรุณาเลือกลูกค้าสำหรับสิทธิ์ปฏิบัติงาน'
     };
   }
 
@@ -593,6 +638,9 @@ function getAccessSheetData() {
     'email',
     'customer_id',
     'role',
+    'can_withdraw',
+    'can_receive',
+    'is_admin',
     'is_active',
     'created_at',
     'created_by',
@@ -669,13 +717,50 @@ function customerIdExists(customerId) {
 
 // Convert one access-sheet row into a normalized backend object.
 function createAuthorizedUserObject(row, columns, rowNumber) {
+  const legacyRole = String(row[columns.role] || '').trim().toUpperCase();
+
   return {
     user_id: String(row[columns.user_id] || '').trim(),
     email: normalizeEmail(row[columns.email]),
     customer_id: String(row[columns.customer_id] || '').trim(),
-    role: String(row[columns.role] || '').trim().toUpperCase(),
+    role: legacyRole,
+    permissions: createPermissionsFromRow(row, columns, legacyRole),
     is_active: toBoolean(row[columns.is_active]),
     row_number: rowNumber
+  };
+}
+
+// Prefer explicit permission columns. Fall back to the legacy role only when
+// all three permission cells are blank during the migration period.
+function createPermissionsFromRow(row, columns, legacyRole) {
+  const permissionValues = [
+    row[columns.can_withdraw],
+    row[columns.can_receive],
+    row[columns.is_admin]
+  ];
+  const hasExplicitPermissions = permissionValues.some(function (value) {
+    const normalizedValue =
+      value === null || value === undefined ? '' : value;
+
+    return String(normalizedValue).trim() !== '';
+  });
+
+  if (hasExplicitPermissions) {
+    return {
+      can_withdraw: toBoolean(permissionValues[0]),
+      can_receive: toBoolean(permissionValues[1]),
+      is_admin: toBoolean(permissionValues[2])
+    };
+  }
+
+  return createPermissionsFromLegacyRole(legacyRole);
+}
+
+function createPermissionsFromLegacyRole(legacyRole) {
+  return {
+    can_withdraw: ['CUSTOMER_USER', 'CUSTOMER_ADMIN'].includes(legacyRole),
+    can_receive: legacyRole === 'RECEIVING_CHECKER',
+    is_admin: legacyRole === 'ADMIN'
   };
 }
 
@@ -762,7 +847,7 @@ function sanitizeUserForClient(user) {
     user_id: user.user_id,
     email: user.email,
     customer_id: user.customer_id,
-    role: user.role,
+    permissions: user.permissions,
     is_active: user.is_active
   };
 }

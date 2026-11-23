@@ -174,7 +174,7 @@ const roadmapPhases = [
       },
       {
         id: 'foundation-security',
-        title: 'Enforce authentication and role authorization in the backend',
+        title: 'Enforce authentication and permission authorization in the backend',
         detail:
           'Never rely on hidden UI controls as the security boundary.'
       },
@@ -200,7 +200,7 @@ const roadmapPhases = [
         id: 'foundation-testing',
         title: 'Complete the test plan on mobile and desktop',
         detail:
-          'Test happy paths, duplicate scans, wrong customers, unauthorized roles, and failed uploads.'
+          'Test happy paths, duplicate scans, wrong customers, unauthorized permissions, and failed uploads.'
       },
       {
         id: 'foundation-deploy',

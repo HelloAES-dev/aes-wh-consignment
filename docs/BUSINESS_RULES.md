@@ -14,7 +14,7 @@ The backend is authoritative. The browser may collect input, but it must not dec
 
 ## Sugar-mill receiving
 
-1. The checker signs in before receiving with an active `RECEIVING_CHECKER` or `ADMIN` account.
+1. The checker signs in with an active account where `can_receive = TRUE`.
 2. The checker scans every tire QR code with the USB-C 2D scanner.
 3. No ORD paper is required at the sugar mill.
 4. The backend resolves the serial to the consignment item.
@@ -37,7 +37,7 @@ The backend is authoritative. The browser may collect input, but it must not dec
 
 ## Admin approval
 
-1. Only an authenticated user with `role = ADMIN` and `is_active = TRUE` can access approval actions.
+1. Only an authenticated user with `is_admin = TRUE` and `is_active = TRUE` can access approval actions.
 2. The admin page may be in the same web app as customer pages.
 3. Google Chat sends a link to the admin page; the link itself does not grant approval permission.
 4. Approval is a backend POST action, not a URL action.
@@ -45,24 +45,26 @@ The backend is authoritative. The browser may collect input, but it must not dec
 6. Approval records the admin identity and timestamp.
 7. Rejection records a reason.
 
-## Role-based navigation
+## Permission-based navigation
 
-1. Users do not choose their role in the browser.
-2. The backend returns the role associated with the verified email.
-3. The frontend displays only the modes allowed for that role.
+1. Users do not choose their permissions in the browser.
+2. The backend returns `can_withdraw`, `can_receive`, and `is_admin` for the
+   verified email.
+3. The frontend displays every mode allowed by those permissions.
 4. Hiding a mode in the frontend never replaces backend authorization.
 
 ## Authorized-account management
 
-1. Only an active `ADMIN` may list, create, activate, or deactivate accounts.
-2. Operational roles are linked to a valid `customer_id` selected from
+1. Only an active account with `is_admin = TRUE` may list, create, edit,
+   activate, or deactivate accounts.
+2. Customer operational permissions are linked to a valid `customer_id` selected from
    `MASTER : Customer`; the admin must not type an arbitrary customer ID.
-3. A system `ADMIN` is not linked to a customer.
+3. An internal account with `is_admin = TRUE` is not linked to a customer.
 4. Email addresses are normalized to lowercase and must be unique.
 5. Accounts are never deleted. Revoked access sets `is_active = FALSE` and
    records `updated_at` and `updated_by`.
-6. An admin may update an existing account's role and linked customer, but the
-   Google email remains immutable.
+6. An admin may update an existing account's permissions and linked customer,
+   but the Google email remains immutable.
 7. An admin cannot deactivate or change the access of the account currently
    being used.
 8. Account creation, access changes, and status changes use a script lock around the final

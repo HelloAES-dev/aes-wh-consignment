@@ -2,7 +2,7 @@
 
 ## Project status
 
-Foundation phase. GitHub Pages deployment, Google Sign-In, role-based home
+Foundation phase. GitHub Pages deployment, Google Sign-In, permission-based home
 navigation, and the first ADMIN account-management module are implemented.
 Transaction workflows are not connected yet.
 
@@ -39,10 +39,11 @@ Warehouse shipment
 - Google Identity Services renders the sign-in button on the root page.
 - Apps Script verifies the Google ID token and checks
   `CONFIG : อีเมลที่ได้รับสิทธิ์`.
-- The backend role determines which application modes are visible; workers do
-  not select their own role.
-- An active `ADMIN` can search the customer master, add authorized accounts,
-  and activate or deactivate accounts without deleting rows.
+- Backend permissions determine which application modes are visible; workers
+  do not select their own permissions.
+- An active account with `is_admin = TRUE` can search the customer master, add
+  authorized accounts, and activate or deactivate accounts without deleting
+  rows.
 - Thai is the primary user-facing language.
 
 ## Planned lifecycle

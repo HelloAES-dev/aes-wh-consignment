@@ -4,16 +4,11 @@ const APP_CONFIG = Object.freeze({
   GOOGLE_CLIENT_ID:
     '527911330380-g9ts5kq4v519vkndkv5lblj1ksjhl4so.apps.googleusercontent.com',
   BACKEND_URL:
-    'https://script.google.com/macros/s/AKfycbxu-xiD4nNE0VxzS5hnZNqlOrWWcqch6op4UGbmuDfhNhoX7Mcj0uY_XLgQloY6S9tI/exec',
-  CUSTOMER_BOUND_ROLES: Object.freeze([
-    'CUSTOMER_USER',
-    'CUSTOMER_ADMIN',
-    'RECEIVING_CHECKER'
-  ])
+    'https://script.google.com/macros/s/AKfycbxu-xiD4nNE0VxzS5hnZNqlOrWWcqch6op4UGbmuDfhNhoX7Mcj0uY_XLgQloY6S9tI/exec'
 });
 
 // These mode definitions provide Thai labels without allowing the browser to
-// decide authorization. The backend role remains the source of truth.
+// decide authorization. Backend permission checks remain authoritative.
 const APPLICATION_MODES = Object.freeze({
   receiving: Object.freeze({
     eyebrow: 'ตรวจรับสินค้า',
@@ -30,22 +25,8 @@ const APPLICATION_MODES = Object.freeze({
   adminAccounts: Object.freeze({
     eyebrow: 'ผู้ดูแลระบบ',
     title: 'จัดการบัญชีผู้ใช้งาน',
-    description: 'เพิ่มบัญชี กำหนดบทบาท และเปิดหรือปิดสิทธิ์'
+    description: 'เพิ่มบัญชี กำหนดสิทธิ์ และเปิดหรือปิดการใช้งาน'
   })
-});
-
-const ROLE_PERMISSIONS = Object.freeze({
-  ADMIN: Object.freeze(['adminAccounts']),
-  RECEIVING_CHECKER: Object.freeze(['receiving']),
-  CUSTOMER_ADMIN: Object.freeze(['withdrawal']),
-  CUSTOMER_USER: Object.freeze(['withdrawal'])
-});
-
-const ROLE_LABELS = Object.freeze({
-  ADMIN: 'ผู้ดูแลระบบ',
-  RECEIVING_CHECKER: 'ผู้ตรวจรับสินค้า',
-  CUSTOMER_ADMIN: 'ผู้ดูแลฝั่งลูกค้า',
-  CUSTOMER_USER: 'ผู้เบิกสินค้า'
 });
 
 // Return an element by ID using a descriptive helper name.
@@ -73,7 +54,9 @@ const userInterface = {
   accountFormTitle: getElementById('accountFormTitle'),
   accountFormDescription: getElementById('accountFormDescription'),
   accountEmail: getElementById('accountEmail'),
-  accountRole: getElementById('accountRole'),
+  permissionWithdraw: getElementById('permissionWithdraw'),
+  permissionReceive: getElementById('permissionReceive'),
+  permissionAdmin: getElementById('permissionAdmin'),
   customerSelector: getElementById('customerSelector'),
   customerSearch: getElementById('customerSearch'),
   customerSearchResults: getElementById('customerSearchResults'),
@@ -187,14 +170,18 @@ async function handleGoogleCredential(credentialResponse) {
   }
 }
 
-// Reveal only the application modes returned by the role-to-permission map.
+// Reveal only the application modes allowed by backend-provided permissions.
 function showAuthenticatedApplication(user) {
-  currentUser = user;
+  currentUser = {
+    ...user,
+    permissions: getNormalizedUserPermissions(user)
+  };
   userInterface.authenticationCard.classList.add('hidden');
-  userInterface.authenticatedUser.textContent = user.email;
+  userInterface.authenticatedUser.textContent = currentUser.email;
   userInterface.authenticatedUser.classList.remove('hidden');
-  userInterface.pageDescription.textContent =
-    ROLE_LABELS[user.role] || 'ผู้ใช้งานระบบ';
+  userInterface.pageDescription.textContent = getPermissionSummary(
+    currentUser.permissions
+  );
 
   renderModeCards();
   showHomeScreen();
@@ -202,7 +189,7 @@ function showAuthenticatedApplication(user) {
 
 // Create mode cards with DOM methods so no dynamic value is inserted as HTML.
 function renderModeCards() {
-  const allowedModes = ROLE_PERMISSIONS[currentUser.role] || [];
+  const allowedModes = getAllowedModes(currentUser.permissions);
   userInterface.modeGrid.replaceChildren();
 
   allowedModes.forEach((modeKey) => {
@@ -251,7 +238,7 @@ function showHomeScreen() {
 }
 
 function openMode(modeKey) {
-  const allowedModes = ROLE_PERMISSIONS[currentUser.role] || [];
+  const allowedModes = getAllowedModes(currentUser.permissions);
 
   if (!allowedModes.includes(modeKey)) {
     return;
@@ -263,6 +250,60 @@ function openMode(modeKey) {
   }
 
   showModulePlaceholder(modeKey);
+}
+
+function getAllowedModes(permissions = {}) {
+  const allowedModes = [];
+
+  if (permissions.can_receive) {
+    allowedModes.push('receiving');
+  }
+
+  if (permissions.can_withdraw) {
+    allowedModes.push('withdrawal');
+  }
+
+  if (permissions.is_admin) {
+    allowedModes.push('adminAccounts');
+  }
+
+  return allowedModes;
+}
+
+function getPermissionSummary(permissions = {}) {
+  const labels = [];
+
+  if (permissions.is_admin) {
+    labels.push('ผู้ดูแลระบบ');
+  }
+
+  if (permissions.can_receive) {
+    labels.push('ผู้ตรวจรับสินค้า');
+  }
+
+  if (permissions.can_withdraw) {
+    labels.push('ผู้เบิกสินค้า');
+  }
+
+  return labels.length > 0 ? labels.join(' · ') : 'ผู้ใช้งานระบบ';
+}
+
+// Accept the legacy single-role response during the deployment transition so
+// the frontend and backend can be updated without an avoidable lockout window.
+function getNormalizedUserPermissions(user = {}) {
+  if (user.permissions && typeof user.permissions === 'object') {
+    return {
+      can_withdraw: Boolean(user.permissions.can_withdraw),
+      can_receive: Boolean(user.permissions.can_receive),
+      is_admin: Boolean(user.permissions.is_admin)
+    };
+  }
+
+  return {
+    can_withdraw: ['CUSTOMER_USER', 'CUSTOMER_ADMIN'].includes(user.role),
+    can_receive: user.role === 'RECEIVING_CHECKER',
+    is_admin: user.role === 'ADMIN'
+  };
 }
 
 function showModulePlaceholder(modeKey) {
@@ -282,12 +323,14 @@ async function showAdminAccountManager() {
   await loadAuthorizedUsers();
 }
 
-// Customer selection is mandatory for operational roles, but a system ADMIN
-// is intentionally not tied to a customer record.
+// Customer selection is mandatory for customer operational permissions. An
+// internal ADMIN account is intentionally not tied to a customer record.
 function updateCustomerSelectorVisibility() {
-  const customerRequired = APP_CONFIG.CUSTOMER_BOUND_ROLES.includes(
-    userInterface.accountRole.value
-  );
+  const hasOperationalPermission =
+    userInterface.permissionWithdraw.checked ||
+    userInterface.permissionReceive.checked;
+  const customerRequired =
+    hasOperationalPermission && !userInterface.permissionAdmin.checked;
 
   userInterface.customerSelector.classList.toggle('hidden', !customerRequired);
 
@@ -394,12 +437,22 @@ async function handleAdminAccountSubmit(event) {
   event.preventDefault();
 
   const email = userInterface.accountEmail.value.trim();
-  const role = userInterface.accountRole.value;
-  const customerRequired = APP_CONFIG.CUSTOMER_BOUND_ROLES.includes(role);
+  const permissions = getAccountFormPermissions();
+  const hasAnyPermission =
+    permissions.canWithdraw || permissions.canReceive || permissions.isAdmin;
+  const customerRequired =
+    (permissions.canWithdraw || permissions.canReceive) &&
+    !permissions.isAdmin;
 
   if (!editingUserId && !userInterface.accountEmail.validity.valid) {
     setFormStatus('กรุณากรอกอีเมลให้ถูกต้อง', 'error');
     userInterface.accountEmail.focus();
+    return;
+  }
+
+  if (!hasAnyPermission) {
+    setFormStatus('กรุณาเลือกสิทธิ์อย่างน้อยหนึ่งรายการ', 'error');
+    userInterface.permissionWithdraw.focus();
     return;
   }
 
@@ -416,7 +469,7 @@ async function handleAdminAccountSubmit(event) {
 
   try {
     const userAccess = {
-      role,
+      permissions,
       customerId: selectedCustomer ? selectedCustomer.customer_id : ''
     };
     const result = editingUserId
@@ -457,11 +510,19 @@ function resetAdminAccountForm() {
   userInterface.accountEmail.disabled = false;
   userInterface.accountFormTitle.textContent = 'เพิ่มบัญชีที่ได้รับสิทธิ์';
   userInterface.accountFormDescription.textContent =
-    'เพิ่มอีเมล กำหนดบทบาท และผูกบัญชีกับลูกค้า';
+    'เพิ่มอีเมล กำหนดสิทธิ์ และผูกบัญชีกับลูกค้า';
   userInterface.createAccountButton.textContent = 'เพิ่มบัญชี';
   userInterface.cancelAccountEditButton.classList.add('hidden');
   clearSelectedCustomer();
   updateCustomerSelectorVisibility();
+}
+
+function getAccountFormPermissions() {
+  return {
+    canWithdraw: userInterface.permissionWithdraw.checked,
+    canReceive: userInterface.permissionReceive.checked,
+    isAdmin: userInterface.permissionAdmin.checked
+  };
 }
 
 // Reuse the account form for editing while keeping the Google email immutable.
@@ -472,10 +533,14 @@ function startEditingUserAccess(user) {
 
   userInterface.accountFormTitle.textContent = 'แก้ไขสิทธิ์ผู้ใช้งาน';
   userInterface.accountFormDescription.textContent =
-    'แก้ไขบทบาทและลูกค้าที่ผูกกับบัญชี โดยไม่เปลี่ยนอีเมล';
+    'แก้ไขสิทธิ์และลูกค้าที่ผูกกับบัญชี โดยไม่เปลี่ยนอีเมล';
   userInterface.accountEmail.value = user.email;
   userInterface.accountEmail.disabled = true;
-  userInterface.accountRole.value = user.role;
+  userInterface.permissionWithdraw.checked =
+    Boolean(user.permissions.can_withdraw);
+  userInterface.permissionReceive.checked =
+    Boolean(user.permissions.can_receive);
+  userInterface.permissionAdmin.checked = Boolean(user.permissions.is_admin);
   userInterface.createAccountButton.textContent = 'บันทึกการแก้ไข';
   userInterface.cancelAccountEditButton.classList.remove('hidden');
 
@@ -523,7 +588,14 @@ function renderAuthorizedUsers(users) {
   }
 
   users.forEach((user) => {
-    userInterface.authorizedUserList.append(createAuthorizedUserCard(user));
+    const normalizedUser = {
+      ...user,
+      permissions: getNormalizedUserPermissions(user)
+    };
+
+    userInterface.authorizedUserList.append(
+      createAuthorizedUserCard(normalizedUser)
+    );
   });
 }
 
@@ -536,14 +608,15 @@ function createAuthorizedUserCard(user) {
   const actions = document.createElement('div');
   const editButton = document.createElement('button');
   const activeStatusButton = document.createElement('button');
-  const roleLabel = ROLE_LABELS[user.role] || user.role;
+  const permissionSummary = getPermissionSummary(user.permissions);
   const isCurrentUser = user.user_id === currentUser.user_id;
 
   card.className = `account-item ${user.is_active ? '' : 'is-inactive'}`.trim();
   information.className = 'account-information';
   email.textContent = user.email;
   metadata.className = 'account-metadata';
-  metadata.textContent = `${roleLabel} · ${user.is_active ? 'ใช้งานอยู่' : 'ปิดสิทธิ์'}`;
+  metadata.textContent =
+    `${permissionSummary} · ${user.is_active ? 'ใช้งานอยู่' : 'ปิดสิทธิ์'}`;
   customer.className = 'account-customer';
   customer.textContent = user.customer_id
     ? `${user.customer_id} — ${user.customer_name || 'ไม่พบชื่อลูกค้า'}`
@@ -610,7 +683,15 @@ async function confirmAndSetUserActive(user, nextIsActive) {
 window.addEventListener('load', initializeGoogleSignIn);
 userInterface.placeholderBackButton.addEventListener('click', showHomeScreen);
 userInterface.adminBackButton.addEventListener('click', showHomeScreen);
-userInterface.accountRole.addEventListener(
+userInterface.permissionWithdraw.addEventListener(
+  'change',
+  updateCustomerSelectorVisibility
+);
+userInterface.permissionReceive.addEventListener(
+  'change',
+  updateCustomerSelectorVisibility
+);
+userInterface.permissionAdmin.addEventListener(
   'change',
   updateCustomerSelectorVisibility
 );

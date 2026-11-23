@@ -232,6 +232,13 @@ input::placeholder {
   color: #6e7681;
 }
 
+input[type="checkbox"] {
+  width: 22px;
+  min-height: 22px;
+  margin: 0;
+  accent-color: var(--accent-blue);
+}
+
 input:focus,
 select:focus,
 button:focus-visible {
@@ -290,7 +297,57 @@ button:focus-visible {
   color: #3fb950;
 }
 
-/* ---------- Role-based mode selection ---------- */
+/* ---------- Permission selection ---------- */
+
+.permission-fieldset {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 18px 0 0;
+  border: 0;
+}
+
+.permission-fieldset legend {
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.permission-option {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 64px;
+  padding: 10px 12px;
+  margin: 0;
+  color: var(--text-primary);
+  cursor: pointer;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.permission-option:has(input:checked) {
+  background: rgba(26, 111, 224, 0.08);
+  border-color: var(--accent-blue);
+}
+
+.permission-option span {
+  display: grid;
+  gap: 2px;
+}
+
+.permission-option strong {
+  font-weight: 500;
+}
+
+.permission-option small {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+/* ---------- Permission-based mode selection ---------- */
 
 .mode-grid {
   display: grid;

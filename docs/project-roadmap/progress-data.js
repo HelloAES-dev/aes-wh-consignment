@@ -7,7 +7,7 @@
  */
 window.projectProgress = Object.freeze({
   projectName: 'wh-consignment',
-  lastReviewed: '2026-11-21',
+  lastReviewed: '2026-11-23',
   taskStatus: Object.freeze({
     'warehouse-scope': 'planned',
     'warehouse-input': 'in_progress',

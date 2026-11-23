@@ -9,8 +9,10 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 | AUTH-001 | Approved customer signs in | Customer view opens | NOT_RUN |
 | AUTH-002 | Unknown email signs in | Access is rejected | NOT_RUN |
 | AUTH-003 | Inactive user signs in | Access is rejected | NOT_RUN |
-| AUTH-004 | Customer opens admin action | Backend rejects request | NOT_RUN |
-| AUTH-005 | Admin signs in | Admin view opens | NOT_RUN |
+| AUTH-004 | Account with `is_admin = FALSE` opens admin action | Backend rejects request | NOT_RUN |
+| AUTH-005 | Account with `is_admin = TRUE` signs in | Admin view opens | NOT_RUN |
+| AUTH-006 | Account has withdrawal and receiving permissions | Both operational modes appear | NOT_RUN |
+| AUTH-007 | Permission cells are blank but legacy role exists | Legacy fallback grants the expected mode | NOT_RUN |
 
 ## Receiving
 
@@ -50,17 +52,19 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 |---|---|---|---|
 | ACC-001 | Admin searches by customer code | Matching customer code and name appear | NOT_RUN |
 | ACC-002 | Admin searches by customer name | Matching customer code and name appear | NOT_RUN |
-| ACC-003 | Admin creates customer user without customer | Frontend and backend reject request | NOT_RUN |
+| ACC-003 | Admin assigns operational permission without customer | Frontend and backend reject request | NOT_RUN |
 | ACC-004 | Admin creates a valid account | One active row with audit fields is appended | NOT_RUN |
 | ACC-005 | Admin submits a duplicate email | Backend rejects duplicate without appending | NOT_RUN |
 | ACC-006 | Non-admin calls account action | Backend rejects request | NOT_RUN |
 | ACC-007 | Admin deactivates another account | `is_active` becomes FALSE; row remains | NOT_RUN |
 | ACC-008 | Admin tries to deactivate own account | Backend rejects request | NOT_RUN |
 | ACC-009 | Two admins add same email simultaneously | Only one account is created | NOT_RUN |
-| ACC-010 | Admin changes a user from withdrawal to receiving | Role and audit fields update; email remains unchanged | NOT_RUN |
-| ACC-011 | Admin changes a customer-bound role without selecting customer | Frontend and backend reject request | NOT_RUN |
-| ACC-012 | Admin changes an account to ADMIN | Role updates and customer ID is cleared | NOT_RUN |
+| ACC-010 | Admin changes withdrawal permission to receiving | Permission and audit fields update; email remains unchanged | NOT_RUN |
+| ACC-011 | Admin changes customer permissions without selecting customer | Frontend and backend reject request | NOT_RUN |
+| ACC-012 | Admin enables internal ADMIN permission | `is_admin` updates and customer ID is cleared | NOT_RUN |
 | ACC-013 | Admin tries to change own access | Backend rejects request | NOT_RUN |
+| ACC-014 | Admin selects no permission | Frontend and backend reject request | NOT_RUN |
+| ACC-015 | Admin selects withdrawal and receiving | Both permissions are stored on one email row | NOT_RUN |
 
 ## Reliability
 
