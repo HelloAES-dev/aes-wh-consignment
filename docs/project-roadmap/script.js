@@ -48,9 +48,9 @@ const roadmapPhases = [
       },
       {
         id: 'warehouse-shipment',
-        title: 'Confirm shipment before the delivery vehicle departs',
+        title: 'Register tires as ready for shipment',
         detail:
-          'Define the controlled transition from READY_TO_SHIP to SHIPPED.'
+          'Do not require a driver or warehouse worker to click a shipment status; receiving confirms physical arrival.'
       }
     ]
   },
@@ -76,7 +76,7 @@ const roadmapPhases = [
         id: 'receiving-transition',
         title: 'Validate and transition received inventory',
         detail:
-          'Resolve the serial and change a valid SHIPPED item to AVAILABLE.'
+          'Resolve the serial and change a valid READY_TO_SHIP item to RECEIVED.'
       },
       {
         id: 'receiving-log',
@@ -136,9 +136,9 @@ const roadmapPhases = [
       },
       {
         id: 'admin-approval',
-        title: 'Build secure approve and reject actions',
+        title: 'Build secure ERP confirmation action',
         detail:
-          'Require ADMIN authorization, validate the current status, and record the decision identity.'
+          'Require is_admin authorization, validate SUBMITTED status, and record the Admin identity after the ERP order is completed.'
       },
       {
         id: 'admin-chat',

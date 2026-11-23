@@ -14,7 +14,7 @@ Track serialized tires from warehouse shipment through sugar-mill receiving and 
 Warehouse shipment
     -> sugar-mill receiving
     -> customer withdrawal request
-    -> admin approval
+    -> admin ERP confirmation
 ```
 
 ## Users
@@ -22,7 +22,7 @@ Warehouse shipment
 - Warehouse staff: create consignment item records before shipment.
 - Sugar-mill checker: scan every tire QR code when tires arrive.
 - Customer user: scan a tire serial number, attach a photo, and submit a withdrawal request.
-- Admin: review, approve, or reject withdrawal requests.
+- Admin: manage accounts and confirm completed ERP orders for withdrawals.
 
 ## Current technical constraints
 
@@ -50,12 +50,20 @@ Warehouse shipment
 
 ```text
 READY_TO_SHIP
-    -> SHIPPED
-    -> AVAILABLE
-    -> WITHDRAWAL_SUBMITTED
-    -> APPROVED
+    -> RECEIVED
     -> WITHDRAWN
 ```
+
+The withdrawal transaction has a separate administrative lifecycle:
+
+```text
+SUBMITTED
+    -> APPROVED
+```
+
+The customer can use the tire immediately after a successful withdrawal
+submission. `APPROVED` records that an internal Admin completed the separate
+ERP order; it is not a pre-withdrawal permission.
 
 ## Documentation map
 

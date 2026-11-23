@@ -18,7 +18,7 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 
 | ID | Scenario | Expected result | Status |
 |---|---|---|---|
-| REC-001 | Scan valid SHIPPED serial | Item becomes AVAILABLE | NOT_RUN |
+| REC-001 | Scan valid READY_TO_SHIP serial | Item becomes RECEIVED | NOT_RUN |
 | REC-002 | Scan same serial twice | Second scan is DUPLICATE | NOT_RUN |
 | REC-003 | Scan unknown serial | NOT_FOUND result; no inventory change | NOT_RUN |
 | REC-004 | Scan another customer serial | WRONG_CUSTOMER result | NOT_RUN |
@@ -29,22 +29,24 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 
 | ID | Scenario | Expected result | Status |
 |---|---|---|---|
-| WDR-001 | Customer submits AVAILABLE serial and photo | Request is SUBMITTED | NOT_RUN |
+| WDR-001 | Customer submits RECEIVED serial and photo | Item becomes WITHDRAWN and request is SUBMITTED | NOT_RUN |
 | WDR-002 | Customer submits another customer serial | Request is rejected | NOT_RUN |
 | WDR-003 | Customer submits unknown serial | Request is rejected | NOT_RUN |
 | WDR-004 | Photo upload succeeds | Drive ID and URL are stored | NOT_RUN |
 | WDR-005 | Photo upload fails | Request remains visible with FAILED status | NOT_RUN |
-| WDR-006 | Same client request is retried | No duplicate transaction | NOT_RUN |
+| WDR-006 | Same client request is retried | No duplicate transaction or second inventory transition | NOT_RUN |
+| WDR-007 | Customer submits valid request | Customer can use tire without waiting for Admin | NOT_RUN |
+| WDR-008 | Customer submits a second request for withdrawn serial | Backend rejects request | NOT_RUN |
 
-## Admin approval
+## Admin ERP confirmation
 
 | ID | Scenario | Expected result | Status |
 |---|---|---|---|
 | ADM-001 | Admin opens Chat link | Correct request opens | NOT_RUN |
-| ADM-002 | Admin approves SUBMITTED request | Request becomes APPROVED | NOT_RUN |
-| ADM-003 | Admin rejects request | REJECTED and reason are recorded | NOT_RUN |
-| ADM-004 | Two admins approve simultaneously | Only one approval succeeds | NOT_RUN |
-| ADM-005 | Customer calls approve endpoint | Backend rejects request | NOT_RUN |
+| ADM-002 | Admin confirms ERP for SUBMITTED request | Request becomes APPROVED and Admin identity is recorded | NOT_RUN |
+| ADM-003 | Admin handles an exception | Reason is recorded without silently restoring inventory | NOT_RUN |
+| ADM-004 | Two admins confirm ERP simultaneously | Only one confirmation succeeds | NOT_RUN |
+| ADM-005 | Customer calls ERP-confirmation endpoint | Backend rejects request | NOT_RUN |
 
 ## Authorized-account management
 

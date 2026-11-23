@@ -30,6 +30,9 @@ Google sign-in
     -> Show submitted status
 ```
 
+After a successful confirmation, the tire is immediately treated as
+`WITHDRAWN`. The customer does not wait for the Admin ERP-confirmation step.
+
 Customer input is limited to:
 
 ```text
@@ -55,6 +58,10 @@ Always-focused scanner input
 
 The 2D USB-C scanner should be configured to send an Enter suffix after each QR value. After every scan, the input is cleared and refocused.
 
+An accepted scan changes the matching inventory item from `READY_TO_SHIP` to
+`RECEIVED`. There is no manual shipment button for a driver or warehouse
+worker.
+
 ## Admin screen
 
 The ADMIN account-management screen shows:
@@ -69,15 +76,16 @@ The ADMIN account-management screen shows:
 - A larger type scale for headings, labels, form controls, account details, and
   actions so the information remains comfortable to read on laptop screens.
 
-The later approval screen will show:
+The later ERP-confirmation screen will show:
 
 - Pending requests.
 - Customer.
 - Serial and product information.
 - Uploaded photo.
 - Submission timestamp.
-- Approve button.
-- Reject button with reason.
+- ERP order reference or Admin notes.
+- `ยืนยันทำรายการ ERP` button.
+- Exception handling with a reason; this is not a pre-withdrawal approval.
 
 The browser may hide this section for non-admin users, but backend authorization remains mandatory.
 
@@ -104,7 +112,9 @@ number of authorized screens makes persistent navigation useful.
 
 ## Google Chat link
 
-New customer requests generate a Chat notification containing a link to the admin web app. The link opens the relevant request; the admin must still authenticate and approve inside the web app.
+New customer requests generate a Chat notification containing a link to the
+Admin web app. The link opens the relevant request; the Admin must still
+authenticate and confirm the ERP process inside the web app.
 
 ## Visual direction
 

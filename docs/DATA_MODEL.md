@@ -76,15 +76,22 @@ updated_at
 updated_by
 ```
 
-Recommended `inventory_status` values:
+Recommended first-version `inventory_status` values:
 
 ```text
 READY_TO_SHIP
-SHIPPED
-AVAILABLE
+RECEIVED
 WITHDRAWN
 VOID
 ```
+
+There is no manual `SHIPPED` transition in the first version. Warehouse staff
+register the tire as `READY_TO_SHIP`; the receiving scan at the customer site
+is the trusted physical-arrival event and changes it to `RECEIVED`.
+
+The existing `shipped_at` column is retained for compatibility with the
+current sheet layout, but the first version does not require a user to populate
+it or to confirm dispatch manually.
 
 ## Sheet: `LOG : สินค้าที่ถูกขอเบิก`
 
@@ -129,6 +136,15 @@ APPROVED
 REJECTED
 CANCELLED
 ```
+
+`SUBMITTED` means the customer has completed the withdrawal request and the
+physical inventory has already changed to `WITHDRAWN`. `APPROVED` means an
+internal Admin confirms that the separate ERP order has been created. It is
+not permission that the customer must wait for before using the tire.
+
+The existing `approved_by_user_id`, `approved_by_email`, and `approved_at`
+columns are retained for this ERP-confirmation event. No additional approval
+columns are required for the first version.
 
 Recommended `photo_upload_status` values:
 
@@ -204,6 +220,19 @@ The account manager searches this sheet using these confirmed headers:
 The sheet also includes address, contact, credit, payment, account-owner, and
 customer-category fields. Those additional fields are not currently returned
 to the account-management screen.
+
+## Inventory and transaction state relationship
+
+The physical inventory state and the administrative withdrawal transaction
+state are intentionally separate:
+
+```text
+MAIN.inventory_status:
+READY_TO_SHIP -> RECEIVED -> WITHDRAWN
+
+LOG withdrawal.request_status:
+SUBMITTED -> APPROVED
+```
 
 ## Key relationships
 
