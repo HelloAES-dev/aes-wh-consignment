@@ -17,6 +17,27 @@ function doGet() {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// Run this function manually from the Apps Script editor after adding or
+// changing OAuth scopes. It performs read-only calls to every backend service
+// so the deployment owner can grant all required permissions in one consent.
+function authorizeBackendServices() {
+  const tokenInfoResponse = UrlFetchApp.fetch(
+    'https://oauth2.googleapis.com/tokeninfo',
+    {
+      muteHttpExceptions: true
+    }
+  );
+  const spreadsheet = getSpreadsheet();
+  const driveRoot = DriveApp.getRootFolder();
+
+  return {
+    success: true,
+    external_request_status: tokenInfoResponse.getResponseCode(),
+    spreadsheet_name: spreadsheet.getName(),
+    drive_root_name: driveRoot.getName()
+  };
+}
+
 // Main POST endpoint. Authentication is required before any action is allowed
 // to run, and every ADMIN action is checked again on the backend.
 function doPost(event) {

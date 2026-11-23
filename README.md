@@ -146,6 +146,11 @@ from the repository root; clasp will synchronize only the files inside
 `backend/`. The local `.clasp.json` contains the Apps Script project ID and
 must remain excluded from Git.
 
+After adding or changing Apps Script OAuth scopes, run
+`authorizeBackendServices` once from the Apps Script editor as the deployment
+owner. The function makes read-only calls to Sheets, Drive, and Google's token
+verification endpoint so the owner can grant every required permission.
+
 ## Deliberately postponed
 
 - PostgreSQL or Supabase migration.
