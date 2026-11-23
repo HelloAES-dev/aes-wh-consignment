@@ -50,6 +50,8 @@ The backend is authoritative. The browser may collect input, but it must not dec
 6. The backend pulls ORD, lot, and product values from the consignment record.
 7. The photo is uploaded to the company Drive or Shared Drive.
 8. The photo must upload successfully before the final withdrawal submission.
+   The backend verifies that it is an image in the configured company
+   withdrawal-photo folder; a browser-provided file ID is not trusted alone.
 9. All serials submitted together share one `withdrawal_batch_id`.
 10. Under a short script lock, the backend rechecks each current inventory row,
     writes one withdrawal row per serial, and changes `RECEIVED` to `WITHDRAWN`.
@@ -60,6 +62,8 @@ The backend is authoritative. The browser may collect input, but it must not dec
     the withdrawal rows are saved successfully.
 14. A retry with the same `client_request_id` must not create a duplicate
     withdrawal.
+15. The batch is all-or-nothing: if any serial, ownership, status, or photo
+    validation fails, no inventory row changes to `WITHDRAWN`.
 
 ## Google Chat order notification
 

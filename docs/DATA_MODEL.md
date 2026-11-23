@@ -151,6 +151,10 @@ customer. The backend uses that value to create one grouped Google Chat order
 notification and calculates product quantities from the rows in the batch.
 There is no additional order-summary sheet in the first version.
 
+One batch-level `client_request_id` is stored on every row in that batch. A
+retry with the same ID returns the existing batch rows instead of writing or
+withdrawing them again.
+
 The existing `approved_by_user_id`, `approved_by_email`, and `approved_at`
 columns are retained for this ERP-confirmation event. No additional approval
 columns are required for the first version.
@@ -166,6 +170,10 @@ FAILED
 The Chat notification contains only a compact customer/product/quantity
 summary, submission time, and Admin web-app link. Photos remain in Drive and
 the full serial-level details remain in the authenticated Admin page.
+
+`photo_drive_file_id` must resolve to an image directly inside the Drive folder
+identified by the `WITHDRAWAL_PHOTO_FOLDER_ID` Script Property. The backend
+derives `photo_drive_url` and `photo_uploaded_at` from Drive after verification.
 
 Recommended `chat_notification_status` values:
 

@@ -20,8 +20,8 @@ window.projectProgress = Object.freeze({
     'receiving-scan': 'done',
     'receiving-transition': 'done',
     'receiving-log': 'done',
-    'withdrawal-auth': 'planned',
-    'withdrawal-submit': 'planned',
+    'withdrawal-auth': 'in_progress',
+    'withdrawal-submit': 'in_progress',
     'withdrawal-photo': 'planned',
     'withdrawal-log': 'planned',
 

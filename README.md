@@ -6,7 +6,9 @@ Foundation phase. GitHub Pages deployment, Google Sign-In, permission-based home
 navigation, and the first ADMIN account-management module are implemented. The
 receiving backend and mobile scanning interface are implemented and manually
 verified with real Sheet rows and scanner hardware. Same-request retry and
-simultaneous-scan reliability tests remain before production sign-off.
+simultaneous-scan reliability tests remain before production sign-off. The
+withdrawal batch backend is implemented and awaits Drive-folder configuration,
+photo upload integration, and end-to-end testing.
 
 ## Purpose
 
@@ -38,6 +40,17 @@ Warehouse shipment
 - Photos are stored in the company Google Drive or Shared Drive.
 - Google Chat receives one grouped summary notification per withdrawal batch;
   photos and serial-level details remain in the authenticated Admin page.
+
+Required Apps Script properties:
+
+```text
+SPREADSHEET_ID
+GOOGLE_CLIENT_ID
+WITHDRAWAL_PHOTO_FOLDER_ID
+```
+
+`WITHDRAWAL_PHOTO_FOLDER_ID` identifies the company Drive folder that is
+allowed to store withdrawal photos. The backend rejects files outside it.
 
 ## Current authentication and access management
 

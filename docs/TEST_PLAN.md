@@ -59,6 +59,8 @@ completed before production deployment.
 | WDR-008 | Customer submits a second request for withdrawn serial | Backend rejects request | NOT_RUN |
 | WDR-009 | Customer submits multiple tires together | One batch ID groups one row per serial | NOT_RUN |
 | WDR-010 | Ten-tire withdrawal batch is saved | Rows are written efficiently and one Chat notification is generated | NOT_RUN |
+| WDR-011 | One item in a batch fails validation | Entire batch is rejected; no inventory status changes | NOT_RUN |
+| WDR-012 | Photo file is missing, not an image, or outside the configured folder | Batch is rejected before inventory changes | NOT_RUN |
 
 ## Admin ERP confirmation
 
