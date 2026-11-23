@@ -28,13 +28,19 @@ function authorizeBackendServices() {
     }
   );
   const spreadsheet = getSpreadsheet();
-  const driveRoot = DriveApp.getRootFolder();
+  const withdrawalPhotoFolderId = getRequiredScriptProperty(
+    'WITHDRAWAL_PHOTO_FOLDER_ID'
+  );
+  const withdrawalPhotoFolder = DriveApp.getFolderById(
+    withdrawalPhotoFolderId
+  );
 
   return {
     success: true,
     external_request_status: tokenInfoResponse.getResponseCode(),
     spreadsheet_name: spreadsheet.getName(),
-    drive_root_name: driveRoot.getName()
+    withdrawal_photo_folder_id: withdrawalPhotoFolder.getId(),
+    withdrawal_photo_folder_name: withdrawalPhotoFolder.getName()
   };
 }
 

@@ -148,8 +148,9 @@ must remain excluded from Git.
 
 After adding or changing Apps Script OAuth scopes, run
 `authorizeBackendServices` once from the Apps Script editor as the deployment
-owner. The function makes read-only calls to Sheets, Drive, and Google's token
-verification endpoint so the owner can grant every required permission.
+owner. The function makes read-only calls to Sheets, the configured withdrawal
+photo folder, and Google's token-verification endpoint so the owner can grant
+every required permission and confirm access to the Shared Drive folder.
 
 ## Deliberately postponed
 
