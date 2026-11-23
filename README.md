@@ -79,6 +79,26 @@ ERP order; it is not a pre-withdrawal permission.
 - `docs/project-log/` — daily project summaries created with `SUMMARIZE`.
 - `AGENTS.md` — coding and Codex working instructions.
 
+## Frontend structure
+
+The authenticated landing page stays at the repository root because it is the
+public application entry point. Operational pages are organized separately:
+
+```text
+index.html
+style.css
+script.js
+pages/
+├── receiving/
+├── withdrawal/
+├── admin-accounts/
+└── admin-erp/
+```
+
+GitHub Actions publishes the root entry files and the complete `pages/`
+directory. Backend files and project documentation are not included in the
+GitHub Pages artifact.
+
 ## Deliberately postponed
 
 - PostgreSQL or Supabase migration.

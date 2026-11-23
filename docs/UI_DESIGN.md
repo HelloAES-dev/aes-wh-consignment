@@ -110,6 +110,25 @@ can_withdraw = TRUE
 Use large mode cards before introducing a sidebar. Add a sidebar only when the
 number of authorized screens makes persistent navigation useful.
 
+## Page organization
+
+The repository-root `index.html` remains the authenticated landing page and
+permission-based mode selector. Operational interfaces are organized under
+`pages/`, with one directory per page:
+
+```text
+pages/receiving/
+pages/withdrawal/
+pages/admin-accounts/
+pages/admin-erp/
+```
+
+Each completed page keeps its own readable `index.html`, `<module>.css`, and
+`<module>.js`. For example, the receiving page uses
+`receiving/index.html`, `receiving/receiving.css`, and `receiving/receiving.js`.
+Authentication and backend authorization must still be validated when entering
+any operational page; a page URL never grants permission.
+
 ## Google Chat link
 
 New customer requests generate a Chat notification containing a link to the
