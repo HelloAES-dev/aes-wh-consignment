@@ -25,8 +25,9 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 | REC-005 | Scan already withdrawn serial | ALREADY_WITHDRAWN result | NOT_RUN |
 | REC-006 | Scan with USB-C 2D scanner | Input is accepted and refocused | NOT_RUN |
 | REC-007 | Scan lowercase `tn05200154` | Serial is normalized and accepted as `TN05200154` | NOT_RUN |
-| REC-008 | Scan a value outside the 10-character alphanumeric pattern | INVALID result; no inventory change | NOT_RUN |
+| REC-008 | Scan a value outside the 10-character uppercase alphanumeric pattern | INVALID result; no inventory change | NOT_RUN |
 | REC-013 | Scan valid serials with different letter positions | `D001000955` and `TN05200154` are accepted | NOT_RUN |
+| REC-019 | Scan a valid 10-letter or 10-digit serial | Value is accepted by format validation | NOT_RUN |
 | REC-009 | Retry the same client request ID | Original result returns; no second log row | NOT_RUN |
 | REC-010 | Two receiving requests target the same serial | Only one changes inventory to RECEIVED | NOT_RUN |
 | REC-011 | Internal admin with receiving permission scans any customer | Scan is evaluated without customer restriction | NOT_RUN |

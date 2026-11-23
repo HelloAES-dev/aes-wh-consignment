@@ -94,8 +94,8 @@ current sheet layout, but the first version does not require a user to populate
 it or to confirm dispatch manually.
 
 `serial_num` is normalized to uppercase and must contain exactly 10 English
-letters and digits, with at least one of each. Letter and digit positions may
-vary. Examples: `D001000955` and `TN05200154`.
+letters or digits. Letter and digit positions may vary, and either type may
+appear alone. Examples: `D001000955` and `TN05200154`.
 
 ## Sheet: `LOG : สินค้าที่ถูกขอเบิก`
 

@@ -28,8 +28,8 @@ The backend is authoritative. The browser may collect input, but it must not dec
 8. A duplicate scan is rejected and recorded as `DUPLICATE`.
 9. Unknown, wrong-customer, or already-withdrawn serials are rejected.
 10. A serial is normalized to uppercase and must contain exactly 10 English
-    alphanumeric characters, including at least one letter and one digit.
-    Letter and digit positions may vary, for example `TN05200154`.
+    letters or digits. Letter and digit positions may vary, and either type may
+    appear alone, for example `TN05200154`.
 11. Every scan has a stable client request ID. Retrying the same request returns
     the original result without creating another log row. Reusing that ID for
     a different user, batch, or serial is rejected as a conflict.

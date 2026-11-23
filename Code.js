@@ -21,10 +21,10 @@ const CONFIG = Object.freeze({
   CUSTOMER_NAME_HEADER: 'ชื่อลูกค้า'
 });
 
-// Tire QR values contain exactly 10 uppercase alphanumeric characters.
-// Letter and digit positions may vary, but both types must be present.
-// Examples: D001000955 and TN05200154.
-const TIRE_SERIAL_PATTERN = /^(?=.*[A-Z])(?=.*[0-9])[A-Z0-9]{10}$/;
+// Tire QR values contain exactly 10 uppercase English letters or digits.
+// Letter and digit positions may vary, and either type may appear alone.
+// Examples: D001000955, TN05200154, or ABCDEFGHIJ.
+const TIRE_SERIAL_PATTERN = /^[A-Z0-9]{10}$/;
 const REQUEST_ID_PATTERN = /^[A-Za-z0-9_-]{8,100}$/;
 
 // Health-check endpoint used to confirm that the web app is reachable.
@@ -210,7 +210,7 @@ function receiveConsignmentSerial(payload, authorizedUser) {
           received_by_email: authorizedUser.email,
           receiving_status: 'INVALID',
           error_code: 'INVALID_SERIAL_FORMAT',
-          notes: 'Serial must contain 10 alphanumeric characters with at least one letter and one digit.',
+          notes: 'Serial must contain exactly 10 uppercase English letters or digits.',
           message: 'รูปแบบหมายเลข Serial ไม่ถูกต้อง'
         })
       );

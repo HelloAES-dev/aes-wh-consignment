@@ -32,8 +32,8 @@ Warehouse shipment
 - The frontend is a mobile web app.
 - A 2D scanner connects to a phone over USB-C and behaves like a keyboard.
 - Tire serial QR content is the primary identifier at the sugar mill and customer site.
-- The current tire serial format is exactly 10 alphanumeric characters and
-  contains both letters and digits, such as `D001000955` or `TN05200154`.
+- The current tire serial format is exactly 10 uppercase English letters or
+  digits, such as `D001000955` or `TN05200154`.
 - Photos are stored in the company Google Drive or Shared Drive.
 - Google Chat receives one-way notifications for new requests.
 
