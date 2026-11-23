@@ -56,7 +56,9 @@ The backend is authoritative. The browser may collect input, but it must not dec
    converts it to JPEG before upload. The backend rejects invalid JPEG data or
    decoded files larger than 5 MB.
 10. Shared Drive uploads use the Advanced Drive service with
-    `supportsAllDrives = TRUE` and a backend-generated filename.
+    `supportsAllDrives = TRUE` and a backend-generated filename. If the
+    deployed runtime has not propagated Advanced Drive create authorization,
+    the backend may use the configured Drive folder service as a fallback.
 11. Every photo upload has a stable `photo_upload_id`. Retrying the same upload
     returns the existing Drive file instead of creating a duplicate image.
 12. All serials submitted together share one `withdrawal_batch_id`.

@@ -40,7 +40,9 @@ Warehouse shipment
   digits, such as `D001000955` or `TN05200154`.
 - Photos are stored in the company Google Drive or Shared Drive.
 - Shared Drive uploads use the Apps Script Advanced Drive service with
-  `supportsAllDrives` enabled.
+  `supportsAllDrives` enabled, with a built-in Drive-folder fallback for
+  deployments where the Advanced Drive create method has not propagated its
+  authorization yet.
 - Google Chat receives one grouped summary notification per withdrawal batch;
   photos and serial-level details remain in the authenticated Admin page.
 

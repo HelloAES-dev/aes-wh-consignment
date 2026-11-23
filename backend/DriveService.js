@@ -27,8 +27,14 @@ function uploadWithdrawalPhoto(payload, authorizedUser) {
   }
 
   try {
-    const existingPhoto = findWithdrawalPhotoByUploadId(
+    const fileName = createWithdrawalPhotoFileName(
+      request.serial_num,
+      authorizedUser.customer_id,
       request.photo_upload_id
+    );
+    const existingPhoto = findWithdrawalPhotoByUploadId(
+      request.photo_upload_id,
+      fileName
     );
 
     if (existingPhoto) {
@@ -36,7 +42,8 @@ function uploadWithdrawalPhoto(payload, authorizedUser) {
         !isSameWithdrawalPhotoUpload(
           existingPhoto,
           request,
-          authorizedUser
+          authorizedUser,
+          fileName
         )
       ) {
         return {
@@ -62,10 +69,6 @@ function uploadWithdrawalPhoto(payload, authorizedUser) {
       );
     }
 
-    const fileName = createWithdrawalPhotoFileName(
-      request.serial_num,
-      authorizedUser.customer_id
-    );
     const photoBlob = Utilities.newBlob(
       photoBytes,
       WITHDRAWAL_PHOTO_MIME_TYPE,
@@ -74,23 +77,12 @@ function uploadWithdrawalPhoto(payload, authorizedUser) {
     const folderId = getRequiredScriptProperty(
       'WITHDRAWAL_PHOTO_FOLDER_ID'
     );
-    const file = Drive.Files.create(
-      {
-        name: fileName,
-        mimeType: WITHDRAWAL_PHOTO_MIME_TYPE,
-        parents: [folderId],
-        appProperties: {
-          photo_upload_id: request.photo_upload_id,
-          serial_num: request.serial_num,
-          customer_id: authorizedUser.customer_id,
-          uploaded_by_user_id: authorizedUser.user_id
-        }
-      },
-      photoBlob,
-      {
-        supportsAllDrives: true,
-        fields: getWithdrawalPhotoDriveFields()
-      }
+    const file = createWithdrawalPhotoFile(
+      request,
+      authorizedUser,
+      folderId,
+      fileName,
+      photoBlob
     );
 
     return createWithdrawalPhotoUploadResponse(file, false);
@@ -179,53 +171,82 @@ function hasJpegSignature(bytes) {
   );
 }
 
-function createWithdrawalPhotoFileName(serialNumber, customerId) {
+function createWithdrawalPhotoFileName(serialNumber, customerId, photoUploadId) {
   const safeCustomerId = String(customerId || 'CUSTOMER')
     .replace(/[^A-Za-z0-9_-]/g, '_');
-  const timestamp = Utilities.formatDate(
-    new Date(),
-    'Asia/Bangkok',
-    'yyyyMMdd_HHmmss'
-  );
-  const uniqueSuffix = Utilities.getUuid().slice(0, 8);
+  const safePhotoUploadId = String(photoUploadId || 'UPLOAD')
+    .replace(/[^A-Za-z0-9_-]/g, '_');
 
-  return `WDR_${safeCustomerId}_${serialNumber}_${timestamp}_${uniqueSuffix}.jpg`;
+  return `WDR_${safeCustomerId}_${serialNumber}_${safePhotoUploadId}.jpg`;
 }
 
-function findWithdrawalPhotoByUploadId(photoUploadId) {
+function findWithdrawalPhotoByUploadId(photoUploadId, fileName) {
   const folderId = getRequiredScriptProperty('WITHDRAWAL_PHOTO_FOLDER_ID');
   const safeUploadId = escapeDriveQueryValue(photoUploadId);
-  const result = Drive.Files.list({
-    q: `'${folderId}' in parents and trashed = false and ` +
-      `appProperties has { key='photo_upload_id' and value='${safeUploadId}' }`,
-    spaces: 'drive',
-    pageSize: 2,
-    includeItemsFromAllDrives: true,
-    supportsAllDrives: true,
-    fields: `files(${getWithdrawalPhotoDriveFields()})`
-  });
-  const files = result.files || [];
+  try {
+    const result = Drive.Files.list({
+      q: `'${folderId}' in parents and trashed = false and ` +
+        `appProperties has { key='photo_upload_id' and value='${safeUploadId}' }`,
+      spaces: 'drive',
+      pageSize: 2,
+      includeItemsFromAllDrives: true,
+      supportsAllDrives: true,
+      fields: `files(${getWithdrawalPhotoDriveFields()})`
+    });
+    const files = result.files || [];
 
-  if (files.length > 1) {
-    throw new Error(`Duplicate photo upload ID: ${photoUploadId}`);
+    if (files.length > 1) {
+      throw new Error(`Duplicate photo upload ID: ${photoUploadId}`);
+    }
+
+    return files[0] || null;
+  } catch (error) {
+    // Fall back to the built-in folder service when Advanced Drive
+    // authorization is unavailable in the deployed web-app runtime.
+    console.warn('Advanced Drive photo lookup unavailable:', error);
+    return findWithdrawalPhotoByNameWithDriveApp(folderId, fileName);
+  }
+}
+
+function findWithdrawalPhotoByNameWithDriveApp(folderId, fileName) {
+  const folder = DriveApp.getFolderById(folderId);
+  const files = folder.getFilesByName(fileName);
+
+  if (!files.hasNext()) {
+    return null;
   }
 
-  return files[0] || null;
+  const file = files.next();
+
+  if (files.hasNext()) {
+    throw new Error(`Duplicate photo filename: ${fileName}`);
+  }
+
+  return normalizeDriveAppFile(file, folderId);
 }
 
 function escapeDriveQueryValue(value) {
   return String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
-function isSameWithdrawalPhotoUpload(file, request, authorizedUser) {
+function isSameWithdrawalPhotoUpload(
+  file,
+  request,
+  authorizedUser,
+  fileName
+) {
   const properties = file.appProperties || {};
 
-  return (
-    properties.photo_upload_id === request.photo_upload_id &&
-    properties.serial_num === request.serial_num &&
-    properties.customer_id === authorizedUser.customer_id &&
-    properties.uploaded_by_user_id === authorizedUser.user_id
-  );
+  if (properties.photo_upload_id) {
+    return (
+      properties.photo_upload_id === request.photo_upload_id &&
+      properties.serial_num === request.serial_num &&
+      properties.customer_id === authorizedUser.customer_id &&
+      properties.uploaded_by_user_id === authorizedUser.user_id
+    );
+  }
+
+  return file.name === fileName;
 }
 
 function getWithdrawalPhotoDriveFields() {
@@ -250,6 +271,83 @@ function createWithdrawalPhotoUploadResponse(file, idempotent) {
   };
 }
 
+// Prefer the Advanced Drive API for Shared Drive metadata. If the deployed
+// runtime has not granted that method, use the folder service as a safe
+// fallback; the file name remains deterministic for retry idempotency.
+function createWithdrawalPhotoFile(
+  request,
+  authorizedUser,
+  folderId,
+  fileName,
+  photoBlob
+) {
+  try {
+    return Drive.Files.create(
+      {
+        name: fileName,
+        mimeType: WITHDRAWAL_PHOTO_MIME_TYPE,
+        parents: [folderId],
+        appProperties: {
+          photo_upload_id: request.photo_upload_id,
+          serial_num: request.serial_num,
+          customer_id: authorizedUser.customer_id,
+          uploaded_by_user_id: authorizedUser.user_id
+        }
+      },
+      photoBlob,
+      {
+        supportsAllDrives: true,
+        fields: getWithdrawalPhotoDriveFields()
+      }
+    );
+  } catch (error) {
+    console.warn('Advanced Drive photo creation unavailable:', error);
+    const folder = DriveApp.getFolderById(folderId);
+    const file = folder.createFile(photoBlob);
+
+    return normalizeDriveAppFile(file, folderId);
+  }
+}
+
+function normalizeDriveAppFile(file, folderId) {
+  const parentFolders = file.getParents();
+  const parents = [];
+
+  while (parentFolders.hasNext()) {
+    parents.push(parentFolders.next().getId());
+  }
+
+  return {
+    id: file.getId(),
+    name: file.getName(),
+    mimeType: file.getMimeType(),
+    webViewLink: file.getUrl(),
+    createdTime: file.getDateCreated().toISOString(),
+    parents: parents,
+    trashed: file.isTrashed(),
+    appProperties: {}
+  };
+}
+
+function getWithdrawalPhotoFolderMetadata(folderId) {
+  try {
+    return Drive.Files.get(folderId, {
+      supportsAllDrives: true,
+      fields: 'id,name,mimeType,trashed'
+    });
+  } catch (error) {
+    console.warn('Advanced Drive folder lookup unavailable:', error);
+    const folder = DriveApp.getFolderById(folderId);
+
+    return {
+      id: folder.getId(),
+      name: folder.getName(),
+      mimeType: 'application/vnd.google-apps.folder',
+      trashed: false
+    };
+  }
+}
+
 // Verify browser-provided file references against the configured company
 // folder. File IDs alone are not trusted as proof of a completed upload.
 function resolveWithdrawalPhotos(items) {
@@ -258,17 +356,14 @@ function resolveWithdrawalPhotos(items) {
   const issues = [];
 
   // Confirm the Shared Drive folder exists before validating individual files.
-  Drive.Files.get(folderId, {
-    supportsAllDrives: true,
-    fields: 'id,mimeType,trashed'
-  });
+  getWithdrawalPhotoFolderMetadata(folderId);
 
   items.forEach(function (item) {
     try {
-      const file = Drive.Files.get(item.photo_drive_file_id, {
-        supportsAllDrives: true,
-        fields: getWithdrawalPhotoDriveFields()
-      });
+      const file = getWithdrawalPhotoFile(
+        item.photo_drive_file_id,
+        folderId
+      );
       const mimeType = String(file.mimeType || '').toLowerCase();
 
       if (file.trashed) {
@@ -284,11 +379,16 @@ function resolveWithdrawalPhotos(items) {
       }
 
       const photoProperties = file.appProperties || {};
+      const safeCustomerId = String(item.customer_id || 'CUSTOMER')
+        .replace(/[^A-Za-z0-9_-]/g, '_');
+      const expectedFallbackPrefix =
+        `WDR_${safeCustomerId}_${item.serial_num}_`;
+      const matchesBinding = photoProperties.serial_num
+        ? photoProperties.serial_num === item.serial_num &&
+          photoProperties.customer_id === item.customer_id
+        : String(file.name || '').startsWith(expectedFallbackPrefix);
 
-      if (
-        photoProperties.serial_num !== item.serial_num ||
-        photoProperties.customer_id !== item.customer_id
-      ) {
+      if (!matchesBinding) {
         throw new Error('Photo file does not match the item and customer.');
       }
 
@@ -316,4 +416,16 @@ function resolveWithdrawalPhotos(items) {
     items: verifiedItems,
     issues: issues
   };
+}
+
+function getWithdrawalPhotoFile(fileId, folderId) {
+  try {
+    return Drive.Files.get(fileId, {
+      supportsAllDrives: true,
+      fields: getWithdrawalPhotoDriveFields()
+    });
+  } catch (error) {
+    console.warn('Advanced Drive photo metadata unavailable:', error);
+    return normalizeDriveAppFile(DriveApp.getFileById(fileId), folderId);
+  }
 }

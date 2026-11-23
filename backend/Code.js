@@ -31,12 +31,8 @@ function authorizeBackendServices() {
   const withdrawalPhotoFolderId = getRequiredScriptProperty(
     'WITHDRAWAL_PHOTO_FOLDER_ID'
   );
-  const withdrawalPhotoFolder = Drive.Files.get(
-    withdrawalPhotoFolderId,
-    {
-      supportsAllDrives: true,
-      fields: 'id,name,mimeType,trashed'
-    }
+  const withdrawalPhotoFolder = getWithdrawalPhotoFolderMetadata(
+    withdrawalPhotoFolderId
   );
 
   return {
