@@ -155,7 +155,9 @@ After adding or changing Apps Script OAuth scopes, run
 `authorizeBackendServices` once from the Apps Script editor as the deployment
 owner. The function makes read-only calls to Sheets, the configured withdrawal
 photo folder, and Google's token-verification endpoint so the owner can grant
-every required permission and confirm access to the Shared Drive folder.
+every required permission and confirm access to the Shared Drive folder. It
+uses Apps Script's granular OAuth scope check to force a consent prompt when
+Drive write permission was previously skipped.
 
 ## Deliberately postponed
 

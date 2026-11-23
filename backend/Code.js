@@ -21,6 +21,20 @@ function doGet() {
 // changing OAuth scopes. It performs read-only calls to every backend service
 // so the deployment owner can grant all required permissions in one consent.
 function authorizeBackendServices() {
+  const requiredScopes = [
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/script.external_request'
+  ];
+
+  // Granular OAuth lets a user approve only some requested permissions.
+  // Running this function in the Apps Script IDE forces a prompt whenever any
+  // required backend scope, especially Drive write access, is still missing.
+  ScriptApp.requireScopes(
+    ScriptApp.AuthMode.FULL,
+    requiredScopes
+  );
+
   const tokenInfoResponse = UrlFetchApp.fetch(
     'https://oauth2.googleapis.com/tokeninfo',
     {
@@ -34,6 +48,19 @@ function authorizeBackendServices() {
   const withdrawalPhotoFolder = getWithdrawalPhotoFolderMetadata(
     withdrawalPhotoFolderId
   );
+  const authorizationInfo = ScriptApp.getAuthorizationInfo(
+    ScriptApp.AuthMode.FULL,
+    requiredScopes
+  );
+
+  console.log(JSON.stringify({
+    authorization_status: String(
+      authorizationInfo.getAuthorizationStatus()
+    ),
+    authorized_scopes: authorizationInfo.getAuthorizedScopes(),
+    withdrawal_photo_folder_id: withdrawalPhotoFolder.id,
+    withdrawal_photo_folder_name: withdrawalPhotoFolder.name
+  }));
 
   return {
     success: true,
