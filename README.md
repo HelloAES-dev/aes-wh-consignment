@@ -4,8 +4,9 @@
 
 Foundation phase. GitHub Pages deployment, Google Sign-In, permission-based home
 navigation, and the first ADMIN account-management module are implemented. The
-receiving backend and mobile scanning interface are implemented; deployment and
-end-to-end testing with real Sheet rows and scanner hardware are still pending.
+receiving backend and mobile scanning interface are implemented and manually
+verified with real Sheet rows and scanner hardware. Same-request retry and
+simultaneous-scan reliability tests remain before production sign-off.
 
 ## Purpose
 

@@ -13,6 +13,7 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 | AUTH-005 | Account with `is_admin = TRUE` signs in | Admin view opens | NOT_RUN |
 | AUTH-006 | Account has withdrawal and receiving permissions | Both operational modes appear | NOT_RUN |
 | AUTH-007 | Permission cells are blank but legacy role exists | Legacy fallback grants the expected mode | NOT_RUN |
+| AUTH-008 | Another active account has `can_receive = TRUE` | Account can enter receiving and submit a scan | PASS |
 
 ## Receiving
 
@@ -30,18 +31,19 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 | REC-019 | Scan a valid 10-letter or 10-digit serial | Value is accepted by format validation | NOT_RUN |
 | REC-009 | Retry the same client request ID | Original result returns; no second log row | NOT_RUN |
 | REC-010 | Two receiving requests target the same serial | Only one changes inventory to RECEIVED | NOT_RUN |
-| REC-011 | Internal admin with receiving permission scans any customer | Scan is evaluated without customer restriction | NOT_RUN |
+| REC-011 | Internal admin with receiving permission scans any customer | Scan is evaluated without customer restriction | PASS |
 | REC-012 | Reuse a client request ID for another user, batch, or serial | IDEMPOTENCY_KEY_CONFLICT; no data is disclosed or changed | NOT_RUN |
 | REC-014 | Network response is lost after submitting a scan | Scanner pauses and retry reuses the same client request ID | NOT_RUN |
 | REC-015 | Open receiving URL without a valid same-tab session | Controls remain hidden and sign-in link appears | NOT_RUN |
 | REC-016 | Signed-in user lacks receiving permission | Controls remain hidden; access is rejected | NOT_RUN |
 | REC-017 | Start a new receiving batch | Local counters/history reset; existing Sheet records remain unchanged | NOT_RUN |
-| REC-018 | Complete a scan on mobile width | Result is readable and scanner input refocuses | NOT_RUN |
+| REC-018 | Complete a scan on mobile width | Result is readable and scanner input refocuses | PASS |
 | REC-020 | Normal receiving account scans an item assigned to its customer | Item is received and the customer ID is preserved | PASS |
 
-The receiving tests marked `PASS` were manually verified on 2026-11-23 using
-the Google Sheets backend and the deployed mobile receiving page. The remaining
-tests must be completed before production deployment.
+The receiving and authentication tests marked `PASS` were manually verified on
+2026-11-23 using the Google Sheets backend, multiple authorized accounts, and
+the deployed mobile receiving page. The remaining reliability tests must be
+completed before production deployment.
 
 ## Customer withdrawal
 
