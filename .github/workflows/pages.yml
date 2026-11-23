@@ -39,6 +39,8 @@ jobs:
           cp index.html style.css script.js _site/
           cp -R assets _site/assets
           cp -R pages _site/pages
+          mkdir -p _site/docs
+          cp -R docs/project-roadmap _site/docs/project-roadmap
 
       - name: Upload frontend artifact
         uses: actions/upload-pages-artifact@v3

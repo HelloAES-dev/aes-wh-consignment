@@ -18,12 +18,12 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 
 | ID | Scenario | Expected result | Status |
 |---|---|---|---|
-| REC-001 | Scan valid READY_TO_SHIP serial | Item becomes RECEIVED | NOT_RUN |
-| REC-002 | Scan same serial twice | Second scan is DUPLICATE | NOT_RUN |
-| REC-003 | Scan unknown serial | NOT_FOUND result; no inventory change | NOT_RUN |
+| REC-001 | Scan valid READY_TO_SHIP serial | Item becomes RECEIVED | PASS |
+| REC-002 | Scan same serial twice | Second scan is DUPLICATE | PASS |
+| REC-003 | Scan unknown serial | NOT_FOUND result; no inventory change | PASS |
 | REC-004 | Scan another customer serial | WRONG_CUSTOMER result | NOT_RUN |
 | REC-005 | Scan already withdrawn serial | ALREADY_WITHDRAWN result | NOT_RUN |
-| REC-006 | Scan with USB-C 2D scanner | Input is accepted and refocused | NOT_RUN |
+| REC-006 | Scan with USB-C 2D scanner | Input is accepted and refocused | PASS |
 | REC-007 | Scan lowercase `tn05200154` | Serial is normalized and accepted as `TN05200154` | NOT_RUN |
 | REC-008 | Scan a value outside the 10-character uppercase alphanumeric pattern | INVALID result; no inventory change | NOT_RUN |
 | REC-013 | Scan valid serials with different letter positions | `D001000955` and `TN05200154` are accepted | NOT_RUN |
@@ -37,6 +37,11 @@ Test the workflows before production deployment. Status starts as `NOT_RUN`.
 | REC-016 | Signed-in user lacks receiving permission | Controls remain hidden; access is rejected | NOT_RUN |
 | REC-017 | Start a new receiving batch | Local counters/history reset; existing Sheet records remain unchanged | NOT_RUN |
 | REC-018 | Complete a scan on mobile width | Result is readable and scanner input refocuses | NOT_RUN |
+| REC-020 | Normal receiving account scans an item assigned to its customer | Item is received and the customer ID is preserved | PASS |
+
+The receiving tests marked `PASS` were manually verified on 2026-11-23 using
+the Google Sheets backend and the deployed mobile receiving page. The remaining
+tests must be completed before production deployment.
 
 ## Customer withdrawal
 

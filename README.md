@@ -98,8 +98,9 @@ pages/
 ```
 
 GitHub Actions publishes the root entry files and the complete `pages/` and
-`assets/` directories. Backend files and project documentation are not included
-in the GitHub Pages artifact.
+`assets/` directories, plus the owner-facing project roadmap at
+`docs/project-roadmap/`. Backend files and the remaining project documentation
+are not included in the GitHub Pages artifact.
 
 ## Deliberately postponed
 
