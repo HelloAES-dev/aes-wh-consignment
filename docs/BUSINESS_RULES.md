@@ -27,6 +27,17 @@ The backend is authoritative. The browser may collect input, but it must not dec
 7. Every scan attempt is recorded in `LOG : รับเข้าสินค้าฝากขาย`.
 8. A duplicate scan is rejected and recorded as `DUPLICATE`.
 9. Unknown, wrong-customer, or already-withdrawn serials are rejected.
+10. A serial is normalized to uppercase and must contain exactly 10 English
+    alphanumeric characters, including at least one letter and one digit.
+    Letter and digit positions may vary, for example `TN05200154`.
+11. Every scan has a stable client request ID. Retrying the same request returns
+    the original result without creating another log row. Reusing that ID for
+    a different user, batch, or serial is rejected as a conflict.
+12. A user may receive only inventory assigned to their `customer_id`. An
+    internal account with both `can_receive = TRUE` and `is_admin = TRUE` may
+    receive across customers for controlled support.
+13. The backend uses a short script lock and re-reads the inventory row before
+    changing `READY_TO_SHIP` to `RECEIVED`.
 
 ## Customer withdrawal
 

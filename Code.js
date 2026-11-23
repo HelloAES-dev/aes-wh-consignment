@@ -14,10 +14,18 @@
 // Environment-specific IDs remain in Script Properties.
 const CONFIG = Object.freeze({
   ACCESS_SHEET_NAME: 'CONFIG : อีเมลที่ได้รับสิทธิ์',
+  CONSIGNMENT_SHEET_NAME: 'MAIN : สินค้าฝากขาย',
+  RECEIVING_LOG_SHEET_NAME: 'LOG : รับเข้าสินค้าฝากขาย',
   CUSTOMER_MASTER_SHEET_NAME: 'MASTER : Customer',
   CUSTOMER_CODE_HEADER: 'รหัสลูกค้า',
   CUSTOMER_NAME_HEADER: 'ชื่อลูกค้า'
 });
+
+// Tire QR values contain exactly 10 uppercase alphanumeric characters.
+// Letter and digit positions may vary, but both types must be present.
+// Examples: D001000955 and TN05200154.
+const TIRE_SERIAL_PATTERN = /^(?=.*[A-Z])(?=.*[0-9])[A-Z0-9]{10}$/;
+const REQUEST_ID_PATTERN = /^[A-Za-z0-9_-]{8,100}$/;
 
 // Health-check endpoint used to confirm that the web app is reachable.
 function doGet() {
@@ -103,6 +111,11 @@ function doPost(event) {
           );
         });
 
+      case 'receiveSerial':
+        return handleReceivingAction(authorizedUser, function () {
+          return receiveConsignmentSerial(payload, authorizedUser);
+        });
+
       default:
         return createErrorResponse(
           'UNKNOWN_ACTION',
@@ -130,6 +143,342 @@ function handleAdminAction(authorizedUser, actionHandler) {
   }
 
   return createJsonResponse(actionHandler());
+}
+
+// Receiving permission is enforced on the backend even when the frontend
+// hides the receiving module from unauthorized users.
+function handleReceivingAction(authorizedUser, actionHandler) {
+  if (!authorizedUser.permissions.can_receive || !authorizedUser.is_active) {
+    return createErrorResponse(
+      'RECEIVING_PERMISSION_REQUIRED',
+      'บัญชีนี้ไม่มีสิทธิ์ตรวจรับสินค้า'
+    );
+  }
+
+  return createJsonResponse(actionHandler());
+}
+
+// Validate and record one physical receiving scan. A short script lock keeps
+// the inventory transition and duplicate check safe during simultaneous scans.
+function receiveConsignmentSerial(payload, authorizedUser) {
+  const request = normalizeReceivingRequest(payload);
+  const requestError = validateReceivingRequest(request);
+
+  if (requestError) {
+    return requestError;
+  }
+
+  const receivingId = `RCV-${request.client_request_id}`;
+  const scriptLock = LockService.getScriptLock();
+
+  if (!scriptLock.tryLock(10000)) {
+    return {
+      success: false,
+      code: 'LOCK_TIMEOUT',
+      message: 'ระบบกำลังบันทึกรายการอื่น กรุณาสแกนอีกครั้ง'
+    };
+  }
+
+  try {
+    const spreadsheet = getSpreadsheet();
+    const receivingLog = getReceivingLogStructure(spreadsheet);
+    const previousLog = findReceivingLogById(receivingLog, receivingId);
+
+    // A network retry with the same client request ID returns the original
+    // outcome instead of appending another log or changing inventory again.
+    if (previousLog) {
+      if (!isSameReceivingRequest(previousLog, request, authorizedUser)) {
+        return {
+          success: false,
+          code: 'IDEMPOTENCY_KEY_CONFLICT',
+          message: 'รหัสคำขอนี้ถูกใช้งานแล้ว กรุณาสแกนใหม่อีกครั้ง'
+        };
+      }
+
+      return createReceivingResponse(previousLog, true);
+    }
+
+    if (!TIRE_SERIAL_PATTERN.test(request.serial_num)) {
+      return recordReceivingOutcome(
+        receivingLog,
+        createReceivingOutcome({
+          receiving_id: receivingId,
+          receiving_batch_id: request.receiving_batch_id,
+          serial_num: request.serial_num,
+          customer_id: authorizedUser.customer_id,
+          received_by_user_id: authorizedUser.user_id,
+          received_by_email: authorizedUser.email,
+          receiving_status: 'INVALID',
+          error_code: 'INVALID_SERIAL_FORMAT',
+          notes: 'Serial must contain 10 alphanumeric characters with at least one letter and one digit.',
+          message: 'รูปแบบหมายเลข Serial ไม่ถูกต้อง'
+        })
+      );
+    }
+
+    const consignment = getConsignmentStructure(spreadsheet);
+    const matches = findExactColumnMatches(
+      consignment,
+      'serial_num',
+      request.serial_num
+    );
+
+    if (matches.length === 0) {
+      return recordReceivingOutcome(
+        receivingLog,
+        createReceivingOutcome({
+          receiving_id: receivingId,
+          receiving_batch_id: request.receiving_batch_id,
+          serial_num: request.serial_num,
+          customer_id: authorizedUser.customer_id,
+          received_by_user_id: authorizedUser.user_id,
+          received_by_email: authorizedUser.email,
+          receiving_status: 'NOT_FOUND',
+          error_code: 'SERIAL_NOT_FOUND',
+          notes: 'No consignment item matches the scanned serial.',
+          message: 'ไม่พบหมายเลข Serial นี้ในระบบ'
+        })
+      );
+    }
+
+    if (matches.length > 1) {
+      return recordReceivingOutcome(
+        receivingLog,
+        createReceivingOutcome({
+          receiving_id: receivingId,
+          receiving_batch_id: request.receiving_batch_id,
+          serial_num: request.serial_num,
+          customer_id: authorizedUser.customer_id,
+          received_by_user_id: authorizedUser.user_id,
+          received_by_email: authorizedUser.email,
+          receiving_status: 'INVALID',
+          error_code: 'DUPLICATE_SERIAL_REGISTRY',
+          notes: 'More than one consignment row uses the scanned serial.',
+          message: 'พบหมายเลข Serial ซ้ำในฐานข้อมูล กรุณาแจ้งผู้ดูแลระบบ'
+        })
+      );
+    }
+
+    const item = createConsignmentItem(
+      consignment,
+      matches[0].getRow()
+    );
+    const outcome = evaluateReceivingOutcome(
+      request,
+      receivingId,
+      item,
+      authorizedUser
+    );
+
+    if (outcome.accepted) {
+      updateConsignmentAsReceived(consignment, item, authorizedUser);
+    }
+
+    return recordReceivingOutcome(receivingLog, outcome);
+  } finally {
+    scriptLock.releaseLock();
+  }
+}
+
+// Support both JavaScript-style and sheet/API-style field names while keeping
+// one normalized internal representation.
+function normalizeReceivingRequest(payload) {
+  return {
+    serial_num: String(payload.serialNum || payload.serial_num || '')
+      .trim()
+      .toUpperCase(),
+    client_request_id: String(
+      payload.clientRequestId || payload.client_request_id || ''
+    ).trim(),
+    receiving_batch_id: String(
+      payload.receivingBatchId || payload.receiving_batch_id || ''
+    ).trim()
+  };
+}
+
+function validateReceivingRequest(request) {
+  if (!REQUEST_ID_PATTERN.test(request.client_request_id)) {
+    return {
+      success: false,
+      code: 'INVALID_CLIENT_REQUEST_ID',
+      message: 'ไม่พบรหัสคำขอที่ถูกต้อง กรุณาโหลดหน้าใหม่แล้วลองอีกครั้ง'
+    };
+  }
+
+  if (!REQUEST_ID_PATTERN.test(request.receiving_batch_id)) {
+    return {
+      success: false,
+      code: 'INVALID_RECEIVING_BATCH_ID',
+      message: 'ไม่พบรหัสรอบตรวจรับที่ถูกต้อง กรุณาเริ่มรอบใหม่'
+    };
+  }
+
+  return null;
+}
+
+// An idempotency key is valid only for the same authenticated user, batch,
+// and serial. This prevents accidental collisions and cross-user data leaks.
+function isSameReceivingRequest(previousLog, request, authorizedUser) {
+  return (
+    previousLog.received_by_user_id === authorizedUser.user_id &&
+    previousLog.received_by_email === authorizedUser.email &&
+    previousLog.receiving_batch_id === request.receiving_batch_id &&
+    previousLog.serial_num === request.serial_num
+  );
+}
+
+// Decide the outcome without writing to Sheets. Internal admins who also hold
+// receiving permission may receive across customers for controlled support.
+function evaluateReceivingOutcome(request, receivingId, item, authorizedUser) {
+  const canReceiveAcrossCustomers = authorizedUser.permissions.is_admin;
+  const ownsItem = item.customer_id === authorizedUser.customer_id;
+  const sharedValues = {
+    receiving_id: receivingId,
+    receiving_batch_id: request.receiving_batch_id,
+    consignment_item_id: item.consignment_item_id,
+    serial_num: request.serial_num,
+    customer_id: item.customer_id,
+    received_by_user_id: authorizedUser.user_id,
+    received_by_email: authorizedUser.email
+  };
+
+  if (!ownsItem && !canReceiveAcrossCustomers) {
+    return createReceivingOutcome(Object.assign({}, sharedValues, {
+      receiving_status: 'WRONG_CUSTOMER',
+      error_code: 'WRONG_CUSTOMER',
+      notes: 'The consignment item belongs to another customer.',
+      message: 'สินค้านี้ไม่ได้อยู่ในสิทธิ์ของลูกค้ารายนี้'
+    }));
+  }
+
+  switch (item.inventory_status) {
+    case 'READY_TO_SHIP':
+      return createReceivingOutcome(Object.assign({}, sharedValues, {
+        accepted: true,
+        receiving_status: 'RECEIVED',
+        message: 'รับเข้าสินค้าสำเร็จ'
+      }));
+
+    case 'RECEIVED':
+      return createReceivingOutcome(Object.assign({}, sharedValues, {
+        receiving_status: 'DUPLICATE',
+        error_code: 'ALREADY_RECEIVED',
+        notes: 'The consignment item was already received.',
+        message: 'สินค้านี้ถูกรับเข้าแล้ว'
+      }));
+
+    case 'WITHDRAWN':
+      return createReceivingOutcome(Object.assign({}, sharedValues, {
+        receiving_status: 'ALREADY_WITHDRAWN',
+        error_code: 'ALREADY_WITHDRAWN',
+        notes: 'The consignment item was already withdrawn.',
+        message: 'สินค้านี้ถูกเบิกออกไปแล้ว'
+      }));
+
+    default:
+      return createReceivingOutcome(Object.assign({}, sharedValues, {
+        receiving_status: 'INVALID',
+        error_code: 'INVALID_INVENTORY_STATUS',
+        notes: `Receiving is not allowed from status ${item.inventory_status}.`,
+        message: 'สถานะสินค้าไม่อนุญาตให้รับเข้า กรุณาแจ้งผู้ดูแลระบบ'
+      }));
+  }
+}
+
+function createReceivingOutcome(values) {
+  const timestamp = new Date();
+
+  return Object.assign({
+    accepted: false,
+    consignment_item_id: '',
+    customer_id: '',
+    received_at: timestamp,
+    receiving_status: 'INVALID',
+    error_code: '',
+    notes: '',
+    created_at: timestamp,
+    message: 'ไม่สามารถรับเข้าสินค้าได้'
+  }, values);
+}
+
+// Change only the status/audit ranges needed by receiving. Keeping these as
+// two grouped writes avoids slow cell-by-cell updates.
+function updateConsignmentAsReceived(consignment, item, authorizedUser) {
+  const timestamp = new Date();
+  const statusStartColumn = consignment.columns.inventory_status;
+  const receiverEndColumn = consignment.columns.received_by_email;
+  const statusValues = item.row.slice(
+    statusStartColumn,
+    receiverEndColumn + 1
+  );
+
+  statusValues[consignment.columns.inventory_status - statusStartColumn] =
+    'RECEIVED';
+  statusValues[consignment.columns.received_at - statusStartColumn] = timestamp;
+  statusValues[
+    consignment.columns.received_by_user_id - statusStartColumn
+  ] = authorizedUser.user_id;
+  statusValues[
+    consignment.columns.received_by_email - statusStartColumn
+  ] = authorizedUser.email;
+
+  consignment.sheet
+    .getRange(
+      item.row_number,
+      statusStartColumn + 1,
+      1,
+      statusValues.length
+    )
+    .setValues([statusValues]);
+
+  consignment.sheet
+    .getRange(item.row_number, consignment.columns.updated_at + 1, 1, 2)
+    .setValues([[timestamp, authorizedUser.email]]);
+}
+
+// Persist every new scan outcome with one row write. Idempotent network
+// retries are returned from their existing row and are not logged twice.
+function recordReceivingOutcome(receivingLog, outcome) {
+  const row = createRowFromObject(receivingLog.headers, outcome);
+  const nextRow = Math.max(receivingLog.sheet.getLastRow() + 1, 2);
+
+  receivingLog.sheet
+    .getRange(nextRow, 1, 1, row.length)
+    .setValues([row]);
+
+  return createReceivingResponse(outcome, false);
+}
+
+function createReceivingResponse(outcome, idempotent) {
+  return {
+    success: true,
+    accepted: outcome.receiving_status === 'RECEIVED',
+    idempotent: idempotent,
+    message: outcome.message || getReceivingMessage(outcome.receiving_status),
+    receiving: {
+      receiving_id: outcome.receiving_id,
+      receiving_batch_id: outcome.receiving_batch_id,
+      consignment_item_id: outcome.consignment_item_id,
+      serial_num: outcome.serial_num,
+      customer_id: outcome.customer_id,
+      received_at: outcome.received_at,
+      receiving_status: outcome.receiving_status,
+      error_code: outcome.error_code || ''
+    }
+  };
+}
+
+function getReceivingMessage(status) {
+  const messages = {
+    RECEIVED: 'รับเข้าสินค้าสำเร็จ',
+    DUPLICATE: 'สินค้านี้ถูกรับเข้าแล้ว',
+    NOT_FOUND: 'ไม่พบหมายเลข Serial นี้ในระบบ',
+    WRONG_CUSTOMER: 'สินค้านี้ไม่ได้อยู่ในสิทธิ์ของลูกค้ารายนี้',
+    ALREADY_WITHDRAWN: 'สินค้านี้ถูกเบิกออกไปแล้ว',
+    INVALID: 'ไม่สามารถรับเข้าสินค้าได้'
+  };
+
+  return messages[status] || messages.INVALID;
 }
 
 // Parse and validate the JSON request body before reading request fields.
@@ -654,6 +1003,152 @@ function getAccessSheetData() {
     sheet: sheet,
     values: values,
     columns: columns
+  };
+}
+
+// Read only the headers first. Individual rows are resolved through exact
+// serial/request-ID searches so each scan does not load the entire workbook.
+function getConsignmentStructure(spreadsheet) {
+  return getSheetStructure(
+    spreadsheet,
+    CONFIG.CONSIGNMENT_SHEET_NAME,
+    [
+      'consignment_item_id',
+      'customer_id',
+      'serial_num',
+      'inventory_status',
+      'received_at',
+      'received_by_user_id',
+      'received_by_email',
+      'updated_at',
+      'updated_by'
+    ]
+  );
+}
+
+function getReceivingLogStructure(spreadsheet) {
+  return getSheetStructure(
+    spreadsheet,
+    CONFIG.RECEIVING_LOG_SHEET_NAME,
+    [
+      'receiving_id',
+      'receiving_batch_id',
+      'consignment_item_id',
+      'serial_num',
+      'customer_id',
+      'received_by_user_id',
+      'received_by_email',
+      'received_at',
+      'receiving_status',
+      'error_code',
+      'notes',
+      'created_at'
+    ]
+  );
+}
+
+function getSheetStructure(spreadsheet, sheetName, requiredHeaders) {
+  const sheet = spreadsheet.getSheetByName(sheetName);
+
+  if (!sheet) {
+    throw new Error(`Missing sheet: ${sheetName}`);
+  }
+
+  const lastColumn = sheet.getLastColumn();
+
+  if (lastColumn === 0) {
+    throw new Error(`Missing header row in sheet: ${sheetName}`);
+  }
+
+  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  const columns = createHeaderMap(headers);
+
+  assertRequiredHeaders(columns, requiredHeaders, sheetName);
+
+  return {
+    sheet: sheet,
+    headers: headers,
+    columns: columns
+  };
+}
+
+function findExactColumnMatches(sheetStructure, header, value) {
+  const lastDataRow = sheetStructure.sheet.getLastRow();
+
+  if (lastDataRow < 2) {
+    return [];
+  }
+
+  return sheetStructure.sheet
+    .getRange(
+      2,
+      sheetStructure.columns[header] + 1,
+      lastDataRow - 1,
+      1
+    )
+    .createTextFinder(value)
+    .matchEntireCell(true)
+    .matchCase(true)
+    .findAll();
+}
+
+function createConsignmentItem(consignment, rowNumber) {
+  const row = consignment.sheet
+    .getRange(rowNumber, 1, 1, consignment.headers.length)
+    .getValues()[0];
+
+  return {
+    row: row,
+    row_number: rowNumber,
+    consignment_item_id: String(
+      row[consignment.columns.consignment_item_id] || ''
+    ).trim(),
+    customer_id: String(row[consignment.columns.customer_id] || '').trim(),
+    serial_num: String(row[consignment.columns.serial_num] || '')
+      .trim()
+      .toUpperCase(),
+    inventory_status: String(
+      row[consignment.columns.inventory_status] || ''
+    ).trim().toUpperCase()
+  };
+}
+
+function findReceivingLogById(receivingLog, receivingId) {
+  const matches = findExactColumnMatches(
+    receivingLog,
+    'receiving_id',
+    receivingId
+  );
+
+  if (matches.length === 0) {
+    return null;
+  }
+
+  const row = receivingLog.sheet
+    .getRange(matches[0].getRow(), 1, 1, receivingLog.headers.length)
+    .getValues()[0];
+
+  return {
+    receiving_id: String(row[receivingLog.columns.receiving_id] || '').trim(),
+    receiving_batch_id: String(
+      row[receivingLog.columns.receiving_batch_id] || ''
+    ).trim(),
+    consignment_item_id: String(
+      row[receivingLog.columns.consignment_item_id] || ''
+    ).trim(),
+    serial_num: String(row[receivingLog.columns.serial_num] || '').trim(),
+    customer_id: String(row[receivingLog.columns.customer_id] || '').trim(),
+    received_by_user_id: String(
+      row[receivingLog.columns.received_by_user_id] || ''
+    ).trim(),
+    received_by_email: normalizeEmail(
+      row[receivingLog.columns.received_by_email]
+    ),
+    received_at: row[receivingLog.columns.received_at] || '',
+    receiving_status: String(
+      row[receivingLog.columns.receiving_status] || ''
+    ).trim().toUpperCase(),
+    error_code: String(row[receivingLog.columns.error_code] || '').trim()
   };
 }
 

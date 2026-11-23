@@ -93,6 +93,10 @@ The existing `shipped_at` column is retained for compatibility with the
 current sheet layout, but the first version does not require a user to populate
 it or to confirm dispatch manually.
 
+`serial_num` is normalized to uppercase and must contain exactly 10 English
+letters and digits, with at least one of each. Letter and digit positions may
+vary. Examples: `D001000955` and `TN05200154`.
+
 ## Sheet: `LOG : สินค้าที่ถูกขอเบิก`
 
 One row represents one withdrawal transaction for one serial number.
@@ -191,6 +195,11 @@ WRONG_CUSTOMER
 ALREADY_WITHDRAWN
 INVALID
 ```
+
+The receiving frontend generates a stable `client_request_id` for each scan.
+The backend stores it as `receiving_id` with an `RCV-` prefix, so retrying the
+same request cannot append a second log row or repeat the inventory transition.
+`receiving_batch_id` groups all scans performed during one receiving session.
 
 ## Master data sources
 
