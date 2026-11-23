@@ -22,6 +22,17 @@ This project is a mobile-first warehouse scanning application. The scan flow is:
 - Avoid unnecessary dependencies for this lightweight prototype.
 - Preserve existing behavior unless the requested change requires otherwise.
 
+## Apps Script backend organization
+
+- Keep all Apps Script source files and `appsscript.json` inside `backend/`.
+- Keep `backend/Code.js` focused on HTTP entry points and action routing.
+- Put authentication, account management, receiving, withdrawal, Sheets access,
+  Drive access, configuration, and shared utilities in their named service files.
+- Add future backend modules as focused service files instead of rebuilding one
+  large monolithic `Code.js` file.
+- Keep `.clasp.json` local and ignored by Git. Its `rootDir` must remain
+  `backend` unless the complete clasp structure is intentionally redesigned.
+
 ## Change handoff commands
 
 - After changing code or completing an adjustment, always provide the synchronization commands in two separate blocks.
@@ -39,7 +50,9 @@ This project is a mobile-first warehouse scanning application. The scan flow is:
   clasp.cmd push
   ```
 
-- Explain that `clasp.cmd push` synchronizes Apps Script files such as `Code.js` and `appsscript.json`, but always include the command so the Apps Script project is not forgotten.
+- Explain that `clasp.cmd push` synchronizes `backend/*.js` and
+  `backend/appsscript.json`, but always include the command so the Apps Script
+  project is not forgotten.
 
 ## Frontend standards
 

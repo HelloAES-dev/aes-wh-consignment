@@ -122,6 +122,30 @@ GitHub Actions publishes the root entry files and the complete `pages/` and
 `docs/project-roadmap/`. Backend files and the remaining project documentation
 are not included in the GitHub Pages artifact.
 
+## Apps Script backend structure
+
+The Apps Script source is isolated in `backend/` so the repository root stays
+focused on the public frontend. Each file has one primary responsibility:
+
+```text
+backend/
+├── appsscript.json
+├── Code.js                 # HTTP entry points and action routing
+├── Config.js               # Sheet names, columns, limits, and statuses
+├── AuthService.js          # Google token and permission verification
+├── AccountService.js       # Authorized-account administration
+├── ReceivingService.js     # Consignment receiving workflow
+├── WithdrawalService.js    # Customer withdrawal workflow
+├── SheetRepository.js      # Google Sheets access and row mapping
+├── DriveService.js         # Withdrawal-photo validation
+└── CoreUtils.js            # Shared request, response, and value helpers
+```
+
+The local `.clasp.json` uses `backend` as its `rootDir`. Run `clasp.cmd push`
+from the repository root; clasp will synchronize only the files inside
+`backend/`. The local `.clasp.json` contains the Apps Script project ID and
+must remain excluded from Git.
+
 ## Deliberately postponed
 
 - PostgreSQL or Supabase migration.

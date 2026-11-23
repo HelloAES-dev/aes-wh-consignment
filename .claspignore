@@ -1,6 +1,4 @@
-# Ignore every file and folder at every directory depth by default.
-**/*
-
-# Upload only the Apps Script backend entry point and manifest.
-!Code.js
-!appsscript.json
+# The clasp rootDir is backend/, so every source file in that directory is
+# intentionally part of the Apps Script project. Ignore editor and OS metadata.
+**/.DS_Store
+**/Thumbs.db
