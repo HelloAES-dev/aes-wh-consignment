@@ -274,12 +274,66 @@ function findWithdrawalRecordsByClientRequestId(
       .getRange(match.getRow(), 1, 1, withdrawalLog.headers.length)
       .getValues()[0];
 
-    return createWithdrawalRecordFromRow(row, withdrawalLog.columns);
+    return createWithdrawalRecordFromRow(
+      row,
+      withdrawalLog.columns,
+      match.getRow()
+    );
   });
 }
 
-function createWithdrawalRecordFromRow(row, columns) {
+// Find every withdrawal row in one batch. Row numbers are retained so a
+// later status update can target the exact audited records without rescanning.
+function findWithdrawalRecordsByBatchId(withdrawalLog, withdrawalBatchId) {
+  const matches = findExactColumnMatches(
+    withdrawalLog,
+    'withdrawal_batch_id',
+    withdrawalBatchId
+  );
+
+  return matches.map(function (match) {
+    const row = withdrawalLog.sheet
+      .getRange(match.getRow(), 1, 1, withdrawalLog.headers.length)
+      .getValues()[0];
+
+    return createWithdrawalRecordFromRow(
+      row,
+      withdrawalLog.columns,
+      match.getRow()
+    );
+  });
+}
+
+// Read the withdrawal log once when building an Admin work queue. This avoids
+// one Sheet request per pending batch while keeping scan-time lookups focused.
+function getWithdrawalRecordsByStatus(withdrawalLog, requestStatus) {
+  const lastDataRow = withdrawalLog.sheet.getLastRow();
+  const normalizedStatus = String(requestStatus || '').trim().toUpperCase();
+
+  if (lastDataRow < 2) {
+    return [];
+  }
+
+  const rows = withdrawalLog.sheet
+    .getRange(2, 1, lastDataRow - 1, withdrawalLog.headers.length)
+    .getValues();
+
+  return rows
+    .map(function (row, index) {
+      return createWithdrawalRecordFromRow(
+        row,
+        withdrawalLog.columns,
+        index + 2
+      );
+    })
+    .filter(function (record) {
+      return record.request_status === normalizedStatus;
+    });
+}
+
+function createWithdrawalRecordFromRow(row, columns, rowNumber) {
   return {
+    row_number: rowNumber || null,
     withdrawal_id: String(row[columns.withdrawal_id] || '').trim(),
     client_request_id: String(row[columns.client_request_id] || '').trim(),
     withdrawal_batch_id: String(
@@ -309,6 +363,16 @@ function createWithdrawalRecordFromRow(row, columns) {
     request_status: String(
       row[columns.request_status] || ''
     ).trim().toUpperCase(),
+    approved_by_user_id: String(
+      row[columns.approved_by_user_id] || ''
+    ).trim(),
+    approved_by_email: normalizeEmail(
+      row[columns.approved_by_email]
+    ),
+    approved_at: row[columns.approved_at] || '',
+    rejection_reason: String(
+      row[columns.rejection_reason] || ''
+    ).trim(),
     photo_drive_file_id: String(
       row[columns.photo_drive_file_id] || ''
     ).trim(),
@@ -320,6 +384,11 @@ function createWithdrawalRecordFromRow(row, columns) {
     chat_notification_status: String(
       row[columns.chat_notification_status] || ''
     ).trim().toUpperCase(),
+    chat_notified_at: row[columns.chat_notified_at] || '',
+    chat_message_name: String(
+      row[columns.chat_message_name] || ''
+    ).trim(),
+    admin_notes: String(row[columns.admin_notes] || '').trim(),
     updated_at: row[columns.updated_at] || ''
   };
 }

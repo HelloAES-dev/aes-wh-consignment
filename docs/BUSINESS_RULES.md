@@ -104,6 +104,10 @@ The backend is authoritative. The browser may collect input, but it must not dec
 9. `APPROVED` means the ERP order was completed; it does not authorize the
    physical withdrawal.
 10. A request that is not ready for ERP confirmation remains `SUBMITTED`.
+11. Confirmation applies to every row with the same `withdrawal_batch_id` as
+    one locked operation; mixed batch statuses are rejected without changes.
+12. Repeating confirmation for a fully `APPROVED` batch is idempotent and does
+    not overwrite the original Admin identity or approval timestamp.
 
 ## Permission-based navigation
 

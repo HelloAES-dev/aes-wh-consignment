@@ -10,7 +10,9 @@ simultaneous-scan reliability tests remain before production sign-off. The
 withdrawal batch backend, Shared Drive photo upload, and mobile withdrawal page
 have passed their first complete end-to-end test. Batch retry, rejection,
 multi-item, and concurrency tests remain before production sign-off. Google
-Chat notification and Admin ERP confirmation remain the next modules.
+The Admin ERP backend now lists grouped pending batches and confirms an entire
+batch with locking, audit fields, and idempotent retries. Its Admin interface
+and Google Chat notification remain the next modules.
 
 ## Purpose
 
@@ -140,6 +142,7 @@ backend/
 ├── Config.js               # Sheet names, columns, limits, and statuses
 ├── AuthService.js          # Google token and permission verification
 ├── AccountService.js       # Authorized-account administration
+├── AdminApprovalService.js # Admin ERP queue and batch confirmation
 ├── ReceivingService.js     # Consignment receiving workflow
 ├── WithdrawalService.js    # Customer withdrawal workflow
 ├── SheetRepository.js      # Google Sheets access and row mapping

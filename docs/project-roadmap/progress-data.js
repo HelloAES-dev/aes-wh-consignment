@@ -27,8 +27,8 @@ window.projectProgress = Object.freeze({
 
     'admin-bootstrap': 'done',
     'admin-accounts': 'in_progress',
-    'admin-queue': 'planned',
-    'admin-approval': 'planned',
+    'admin-queue': 'in_progress',
+    'admin-approval': 'in_progress',
     'admin-chat': 'planned',
     'admin-audit': 'planned',
 

@@ -143,6 +143,19 @@ function doPost(event) {
           );
         });
 
+      case 'adminListPendingWithdrawals':
+        return handleAdminAction(authorizedUser, function () {
+          return listPendingWithdrawalBatches();
+        });
+
+      case 'adminApproveWithdrawalBatch':
+        return handleAdminAction(authorizedUser, function () {
+          return approveWithdrawalBatch(
+            payload.withdrawalBatchId || payload.withdrawal_batch_id,
+            authorizedUser
+          );
+        });
+
       case 'receiveSerial':
         return handleReceivingAction(authorizedUser, function () {
           return receiveConsignmentSerial(payload, authorizedUser);
