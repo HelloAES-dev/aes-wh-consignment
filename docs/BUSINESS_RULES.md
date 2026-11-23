@@ -42,20 +42,37 @@ The backend is authoritative. The browser may collect input, but it must not dec
 ## Customer withdrawal
 
 1. The customer signs in with Google.
-2. The customer submits only `serial_num` and a photo.
+2. The customer scans one or more serial numbers into one withdrawal batch and
+   submits each serial with its required photo.
 3. The backend obtains the email from the verified Google ID token.
 4. The backend maps the email to `CONFIG : อีเมลที่ได้รับสิทธิ์`.
 5. The backend confirms that the serial belongs to that customer.
 6. The backend pulls ORD, lot, and product values from the consignment record.
 7. The photo is uploaded to the company Drive or Shared Drive.
 8. The photo must upload successfully before the final withdrawal submission.
-9. Under a short script lock, the backend rechecks the current inventory row,
-   writes the withdrawal transaction, and changes `RECEIVED` to `WITHDRAWN`.
-10. The customer can use the tire immediately after a successful submission;
+9. All serials submitted together share one `withdrawal_batch_id`.
+10. Under a short script lock, the backend rechecks each current inventory row,
+    writes one withdrawal row per serial, and changes `RECEIVED` to `WITHDRAWN`.
+11. The customer can use the tire immediately after a successful submission;
     no Admin approval is required beforehand.
-11. The withdrawal request is written with `request_status = SUBMITTED`.
-12. A retry with the same `client_request_id` must not create a duplicate
+12. Each withdrawal row is written with `request_status = SUBMITTED`.
+13. The backend sends one grouped Google Chat notification for the batch after
+    the withdrawal rows are saved successfully.
+14. A retry with the same `client_request_id` must not create a duplicate
     withdrawal.
+
+## Google Chat order notification
+
+1. The notification groups rows by `withdrawal_batch_id` and `customer_id`.
+2. Product lines are grouped by `product_code` and `product_name_snapshot`,
+   with quantity calculated by the backend.
+3. The card contains customer code/name, grouped products and quantities,
+   total quantity, submission time, and a link to the Admin web-app request.
+4. Photos and the full serial list are not embedded in the Chat card. Admin
+   reviews those details inside the authenticated web app.
+5. One batch creates one Chat notification, not one message per tire.
+6. If Chat delivery fails, the withdrawal rows remain `SUBMITTED` and only
+   `chat_notification_status` becomes `FAILED` for retry.
 
 ## Admin ERP confirmation
 
@@ -65,13 +82,15 @@ The backend is authoritative. The browser may collect input, but it must not dec
 3. Google Chat sends a link to the Admin page; the link itself does not grant
    confirmation permission.
 4. ERP confirmation is a backend POST action, not a URL action.
-5. An Admin can confirm only a request currently in `SUBMITTED` status.
-6. Confirmation records the Admin identity and timestamp in the existing
+5. The Admin checks the separate ERP system outside this application.
+6. The Admin page provides one `APPROVED` action; no in-app checklist or ERP
+   integration is required for the first version.
+7. An Admin can confirm only a request currently in `SUBMITTED` status.
+8. Confirmation records the Admin identity and timestamp in the existing
    `approved_by_*` and `approved_at` columns.
-7. `APPROVED` means the ERP order was completed; it does not authorize the
+9. `APPROVED` means the ERP order was completed; it does not authorize the
    physical withdrawal.
-8. A normal rejection must not silently return a physically withdrawn tire to
-   stock. Exceptions require a separate correction or reversal process.
+10. A request that is not ready for ERP confirmation remains `SUBMITTED`.
 
 ## Permission-based navigation
 

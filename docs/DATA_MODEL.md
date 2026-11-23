@@ -146,6 +146,11 @@ physical inventory has already changed to `WITHDRAWN`. `APPROVED` means an
 internal Admin confirms that the separate ERP order has been created. It is
 not permission that the customer must wait for before using the tire.
 
+`withdrawal_batch_id` groups all serial rows submitted together by one
+customer. The backend uses that value to create one grouped Google Chat order
+notification and calculates product quantities from the rows in the batch.
+There is no additional order-summary sheet in the first version.
+
 The existing `approved_by_user_id`, `approved_by_email`, and `approved_at`
 columns are retained for this ERP-confirmation event. No additional approval
 columns are required for the first version.
@@ -157,6 +162,10 @@ PENDING
 UPLOADED
 FAILED
 ```
+
+The Chat notification contains only a compact customer/product/quantity
+summary, submission time, and Admin web-app link. Photos remain in Drive and
+the full serial-level details remain in the authenticated Admin page.
 
 Recommended `chat_notification_status` values:
 

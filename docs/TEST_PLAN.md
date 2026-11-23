@@ -57,16 +57,20 @@ completed before production deployment.
 | WDR-006 | Same client request is retried | No duplicate transaction or second inventory transition | NOT_RUN |
 | WDR-007 | Customer submits valid request | Customer can use tire without waiting for Admin | NOT_RUN |
 | WDR-008 | Customer submits a second request for withdrawn serial | Backend rejects request | NOT_RUN |
+| WDR-009 | Customer submits multiple tires together | One batch ID groups one row per serial | NOT_RUN |
+| WDR-010 | Ten-tire withdrawal batch is saved | Rows are written efficiently and one Chat notification is generated | NOT_RUN |
 
 ## Admin ERP confirmation
 
 | ID | Scenario | Expected result | Status |
 |---|---|---|---|
-| ADM-001 | Admin opens Chat link | Correct request opens | NOT_RUN |
-| ADM-002 | Admin confirms ERP for SUBMITTED request | Request becomes APPROVED and Admin identity is recorded | NOT_RUN |
-| ADM-003 | Admin handles an exception | Reason is recorded without silently restoring inventory | NOT_RUN |
+| ADM-001 | Admin opens grouped Chat link | Correct withdrawal batch opens | NOT_RUN |
+| ADM-002 | Admin clicks APPROVED for a SUBMITTED request | Request becomes APPROVED and Admin identity is recorded | NOT_RUN |
+| ADM-003 | ERP order is not ready | Request remains SUBMITTED; no approval occurs | NOT_RUN |
 | ADM-004 | Two admins confirm ERP simultaneously | Only one confirmation succeeds | NOT_RUN |
 | ADM-005 | Customer calls ERP-confirmation endpoint | Backend rejects request | NOT_RUN |
+| ADM-006 | Batch contains multiple product codes | Chat card shows grouped products and calculated quantities | NOT_RUN |
+| ADM-007 | Withdrawal batch includes photos | Chat card excludes photos; Admin page can show them | NOT_RUN |
 
 ## Authorized-account management
 

@@ -85,14 +85,16 @@ The ADMIN account-management screen shows:
 
 The later ERP-confirmation screen will show:
 
-- Pending requests.
-- Customer.
-- Serial and product information.
-- Uploaded photo.
+- Pending withdrawal batches.
+- Customer code and name.
+- Grouped product lines and quantities.
 - Submission timestamp.
-- ERP order reference or Admin notes.
-- `ยืนยันทำรายการ ERP` button.
-- Exception handling with a reason; this is not a pre-withdrawal approval.
+- A link or detail view for serials and uploaded photos.
+- One `APPROVED` button after the Admin checks the separate ERP system.
+
+The first version does not include an in-app checklist, ERP integration, or
+photo attachments in the Google Chat card. The Chat card contains only the
+grouped summary and Admin web-app link.
 
 The browser may hide this section for non-admin users, but backend authorization remains mandatory.
 

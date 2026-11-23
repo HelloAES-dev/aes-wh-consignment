@@ -36,7 +36,8 @@ Warehouse shipment
 - The current tire serial format is exactly 10 uppercase English letters or
   digits, such as `D001000955` or `TN05200154`.
 - Photos are stored in the company Google Drive or Shared Drive.
-- Google Chat receives one-way notifications for new requests.
+- Google Chat receives one grouped summary notification per withdrawal batch;
+  photos and serial-level details remain in the authenticated Admin page.
 
 ## Current authentication and access management
 
@@ -70,6 +71,11 @@ SUBMITTED
 The customer can use the tire immediately after a successful withdrawal
 submission. `APPROVED` records that an internal Admin completed the separate
 ERP order; it is not a pre-withdrawal permission.
+
+Admin confirmation is intentionally simple in version one: after checking the
+separate ERP system, an authorized Admin opens the request from the Chat link
+and clicks `APPROVED`. The application does not integrate with the ERP or
+require an in-app checklist.
 
 ## Documentation map
 
