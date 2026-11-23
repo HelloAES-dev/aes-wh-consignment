@@ -48,6 +48,15 @@ resizes it, converts it to JPEG, and uploads it. The final submit button remains
 disabled until every draft item has a verified Drive file ID. An uncertain
 network retry reuses the same photo-upload ID or batch request ID.
 
+Withdrawal controls distinguish two cancellation scopes:
+
+- `ลบรูป` clears only the current item's photo so a replacement can be taken.
+- `นำรายการนี้ออก` removes only that tire from the unsent withdrawal batch.
+- `ยกเลิกรอบเบิก` clears the complete unsent draft batch.
+
+Already-uploaded temporary photos are not deleted automatically by these local
+draft actions; the backend keeps uploaded files auditable in the Shared Drive.
+
 ## Receiving screen
 
 The receiving screen is continuous scan mode, not a list that requires clicking each item.

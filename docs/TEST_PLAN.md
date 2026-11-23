@@ -66,6 +66,9 @@ completed before production deployment.
 | WDR-015 | Signed-in user lacks withdrawal permission or customer assignment | Withdrawal controls remain hidden; backend rejects actions | NOT_RUN |
 | WDR-016 | Mobile camera image is selected | Browser compresses to JPEG and Shared Drive upload succeeds | NOT_RUN |
 | WDR-017 | User scans the same serial twice in one draft batch | Second scan is rejected locally; only one draft item remains | NOT_RUN |
+| WDR-018 | User clicks `ลบรูป` on one draft item | Only that photo reference is cleared; the tire remains in the batch | NOT_RUN |
+| WDR-019 | User clicks `นำรายการนี้ออก` | Only that tire is removed from the unsent batch | NOT_RUN |
+| WDR-020 | User clicks `ยกเลิกรอบเบิก` | The complete unsent draft batch is cleared | NOT_RUN |
 
 ## Admin ERP confirmation
 

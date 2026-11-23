@@ -446,6 +446,30 @@ async function uploadItemPhoto(item) {
   }
 }
 
+// Remove only the local photo selection from an item. The tire remains in the
+// draft batch so the worker can attach a replacement image immediately.
+function clearItemPhoto(serialNumber) {
+  const item = draftItems.get(serialNumber);
+
+  if (!item || isSubmitting || item.photoStatus === 'uploading') {
+    return;
+  }
+
+  if (item.photoPreviewUrl) {
+    URL.revokeObjectURL(item.photoPreviewUrl);
+  }
+
+  item.photoUploadId = '';
+  item.photoFileId = '';
+  item.photoPreviewUrl = '';
+  item.photoBase64 = '';
+  item.photoStatus = 'missing';
+  item.photoMessage = 'ยังไม่ได้ถ่ายรูป';
+  pendingSubmission = null;
+  renderDraftItems();
+}
+
+// Remove the complete tire item from the unsent withdrawal batch.
 function removeDraftItem(serialNumber) {
   const item = draftItems.get(serialNumber);
 
@@ -488,6 +512,7 @@ function createDraftItemCard(item) {
   const photoStatus = document.createElement('span');
   const actions = document.createElement('div');
   const photoButton = document.createElement('button');
+  const clearPhotoButton = document.createElement('button');
   const removeButton = document.createElement('button');
 
   card.className = `withdrawal-item is-${item.photoStatus}`;
@@ -524,21 +549,31 @@ function createDraftItemCard(item) {
     photoButton.textContent = 'ลองอัปโหลดอีกครั้ง';
     photoButton.addEventListener('click', () => uploadItemPhoto(item));
   } else {
-    photoButton.textContent = item.photoFileId ? 'เปลี่ยนรูป' : 'ถ่ายรูป';
+    photoButton.textContent = item.photoFileId ? 'ถ่ายรูปใหม่' : 'ถ่ายรูป';
     photoButton.addEventListener('click', () => {
       openPhotoPicker(item.serial_num);
     });
   }
 
+  clearPhotoButton.type = 'button';
+  clearPhotoButton.className = 'clear-photo-button';
+  clearPhotoButton.textContent = 'ลบรูป';
+  clearPhotoButton.disabled = isSubmitting ||
+    item.photoStatus === 'uploading' ||
+    (!item.photoFileId && !item.photoBase64 && !item.photoPreviewUrl);
+  clearPhotoButton.addEventListener('click', () => {
+    clearItemPhoto(item.serial_num);
+  });
+
   removeButton.type = 'button';
   removeButton.className = 'remove-item-button';
-  removeButton.textContent = 'นำออก';
+  removeButton.textContent = 'นำรายการนี้ออก';
   removeButton.disabled = isSubmitting || item.photoStatus === 'uploading';
   removeButton.addEventListener('click', () => {
     removeDraftItem(item.serial_num);
   });
 
-  actions.append(photoButton, removeButton);
+  actions.append(photoButton, clearPhotoButton, removeButton);
   card.append(information, actions);
   return card;
 }
@@ -723,7 +758,8 @@ function releasePhotoPreviewUrls() {
 
 function confirmNewBatch() {
   const confirmed = draftItems.size === 0 || window.confirm(
-    'เริ่มรอบใหม่และล้างรายการบนหน้าจอหรือไม่? ข้อมูลที่ส่งแล้วจะไม่ถูกลบ'
+    'ยกเลิกรอบเบิกนี้และล้างรายการทั้งหมดบนหน้าจอหรือไม่?\n' +
+    'ข้อมูลที่ส่งสำเร็จแล้วจะไม่ถูกลบ'
   );
 
   if (confirmed) {
