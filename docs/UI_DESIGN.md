@@ -42,6 +42,12 @@ photo
 
 The email and customer identity are displayed as read-only values from the authenticated account.
 
+The implemented mobile workflow verifies each scanned serial with the backend
+before adding it to the draft batch. Selecting or taking a photo automatically
+resizes it, converts it to JPEG, and uploads it. The final submit button remains
+disabled until every draft item has a verified Drive file ID. An uncertain
+network retry reuses the same photo-upload ID or batch request ID.
+
 ## Receiving screen
 
 The receiving screen is continuous scan mode, not a list that requires clicking each item.

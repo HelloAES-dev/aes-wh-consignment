@@ -247,6 +247,11 @@ function openMode(modeKey) {
     return;
   }
 
+  if (modeKey === 'withdrawal') {
+    window.location.assign('pages/withdrawal/');
+    return;
+  }
+
   showModulePlaceholder(modeKey);
 }
 

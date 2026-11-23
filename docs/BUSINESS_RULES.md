@@ -52,17 +52,24 @@ The backend is authoritative. The browser may collect input, but it must not dec
 8. The photo must upload successfully before the final withdrawal submission.
    The backend verifies that it is an image in the configured company
    withdrawal-photo folder; a browser-provided file ID is not trusted alone.
-9. All serials submitted together share one `withdrawal_batch_id`.
-10. Under a short script lock, the backend rechecks each current inventory row,
+9. The browser resizes each photo to a maximum dimension of 1600 pixels and
+   converts it to JPEG before upload. The backend rejects invalid JPEG data or
+   decoded files larger than 5 MB.
+10. Shared Drive uploads use the Advanced Drive service with
+    `supportsAllDrives = TRUE` and a backend-generated filename.
+11. Every photo upload has a stable `photo_upload_id`. Retrying the same upload
+    returns the existing Drive file instead of creating a duplicate image.
+12. All serials submitted together share one `withdrawal_batch_id`.
+13. Under a short script lock, the backend rechecks each current inventory row,
     writes one withdrawal row per serial, and changes `RECEIVED` to `WITHDRAWN`.
-11. The customer can use the tire immediately after a successful submission;
+14. The customer can use the tire immediately after a successful submission;
     no Admin approval is required beforehand.
-12. Each withdrawal row is written with `request_status = SUBMITTED`.
-13. The backend sends one grouped Google Chat notification for the batch after
+15. Each withdrawal row is written with `request_status = SUBMITTED`.
+16. The backend sends one grouped Google Chat notification for the batch after
     the withdrawal rows are saved successfully.
-14. A retry with the same `client_request_id` must not create a duplicate
+17. A retry with the same `client_request_id` must not create a duplicate
     withdrawal.
-15. The batch is all-or-nothing: if any serial, ownership, status, or photo
+18. The batch is all-or-nothing: if any serial, ownership, status, or photo
     validation fails, no inventory row changes to `WITHDRAWN`.
 
 ## Google Chat order notification

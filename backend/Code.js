@@ -31,16 +31,20 @@ function authorizeBackendServices() {
   const withdrawalPhotoFolderId = getRequiredScriptProperty(
     'WITHDRAWAL_PHOTO_FOLDER_ID'
   );
-  const withdrawalPhotoFolder = DriveApp.getFolderById(
-    withdrawalPhotoFolderId
+  const withdrawalPhotoFolder = Drive.Files.get(
+    withdrawalPhotoFolderId,
+    {
+      supportsAllDrives: true,
+      fields: 'id,name,mimeType,trashed'
+    }
   );
 
   return {
     success: true,
     external_request_status: tokenInfoResponse.getResponseCode(),
     spreadsheet_name: spreadsheet.getName(),
-    withdrawal_photo_folder_id: withdrawalPhotoFolder.getId(),
-    withdrawal_photo_folder_name: withdrawalPhotoFolder.getName()
+    withdrawal_photo_folder_id: withdrawalPhotoFolder.id,
+    withdrawal_photo_folder_name: withdrawalPhotoFolder.name
   };
 }
 
@@ -124,6 +128,16 @@ function doPost(event) {
       case 'submitWithdrawalBatch':
         return handleWithdrawalAction(authorizedUser, function () {
           return submitWithdrawalBatch(payload, authorizedUser);
+        });
+
+      case 'lookupWithdrawalSerial':
+        return handleWithdrawalAction(authorizedUser, function () {
+          return lookupWithdrawalSerial(payload, authorizedUser);
+        });
+
+      case 'uploadWithdrawalPhoto':
+        return handleWithdrawalAction(authorizedUser, function () {
+          return uploadWithdrawalPhoto(payload, authorizedUser);
         });
 
       default:

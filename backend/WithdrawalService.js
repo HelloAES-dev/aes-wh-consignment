@@ -2,6 +2,142 @@
  * Customer withdrawal batch transaction service.
  */
 
+// Resolve one scanned serial before the worker takes a photo. This provides
+// useful product feedback without trusting the browser for ownership or status.
+function lookupWithdrawalSerial(payload, authorizedUser) {
+  const serialNumber = String(
+    payload.serialNum || payload.serial_num || ''
+  ).trim().toUpperCase();
+
+  if (!TIRE_SERIAL_PATTERN.test(serialNumber)) {
+    return createWithdrawalLookupFailure(
+      serialNumber,
+      'INVALID_SERIAL_FORMAT',
+      'หมายเลข Serial ต้องเป็นตัวอักษรภาษาอังกฤษหรือตัวเลข 10 ตัว'
+    );
+  }
+
+  const resolution = resolveWithdrawalItemForUser(
+    serialNumber,
+    authorizedUser
+  );
+
+  if (resolution.issue) {
+    return createWithdrawalLookupFailure(
+      serialNumber,
+      resolution.issue.code,
+      resolution.issue.message
+    );
+  }
+
+  return {
+    success: true,
+    available: true,
+    message: 'พบสินค้าพร้อมเบิก',
+    item: createWithdrawalItemForClient(resolution.item)
+  };
+}
+
+// Recheck a single serial from Sheets for both lookup and photo upload. The
+// final batch submission performs the same validation again under its lock.
+function resolveWithdrawalItemForUser(serialNumber, authorizedUser) {
+  const spreadsheet = getSpreadsheet();
+  const consignment = getWithdrawalConsignmentStructure(spreadsheet);
+  const matches = findExactColumnMatches(
+    consignment,
+    'serial_num',
+    serialNumber
+  );
+
+  if (matches.length === 0) {
+    return {
+      issue: createWithdrawalIssue(
+        serialNumber,
+        'SERIAL_NOT_FOUND',
+        'ไม่พบหมายเลข Serial นี้ในระบบ'
+      )
+    };
+  }
+
+  if (matches.length > 1) {
+    return {
+      issue: createWithdrawalIssue(
+        serialNumber,
+        'DUPLICATE_SERIAL_REGISTRY',
+        'พบหมายเลข Serial ซ้ำในฐานข้อมูล กรุณาแจ้งผู้ดูแลระบบ'
+      )
+    };
+  }
+
+  const rowNumber = matches[0].getRow();
+  const row = consignment.sheet
+    .getRange(rowNumber, 1, 1, consignment.headers.length)
+    .getValues()[0];
+  const item = createWithdrawalConsignmentItem(
+    row,
+    consignment.columns,
+    rowNumber
+  );
+
+  if (item.customer_id !== authorizedUser.customer_id) {
+    return {
+      issue: createWithdrawalIssue(
+        serialNumber,
+        'WRONG_CUSTOMER',
+        'สินค้านี้ไม่ได้อยู่ในสิทธิ์ของลูกค้ารายนี้'
+      )
+    };
+  }
+
+  if (item.inventory_status === 'WITHDRAWN') {
+    return {
+      issue: createWithdrawalIssue(
+        serialNumber,
+        'ALREADY_WITHDRAWN',
+        'สินค้านี้ถูกเบิกออกไปแล้ว'
+      )
+    };
+  }
+
+  if (item.inventory_status !== 'RECEIVED') {
+    return {
+      issue: createWithdrawalIssue(
+        serialNumber,
+        'INVALID_INVENTORY_STATUS',
+        'สินค้านี้ยังไม่อยู่ในสถานะพร้อมเบิก'
+      )
+    };
+  }
+
+  return {
+    item: item
+  };
+}
+
+function createWithdrawalLookupFailure(serialNumber, code, message) {
+  return {
+    success: true,
+    available: false,
+    code: code,
+    message: message,
+    serial_num: serialNumber
+  };
+}
+
+function createWithdrawalItemForClient(item) {
+  return {
+    consignment_item_id: item.consignment_item_id,
+    ord_num: item.ord_num,
+    customer_id: item.customer_id,
+    customer_name_snapshot: item.customer_name_snapshot,
+    lot_num: item.lot_num,
+    product_code: item.product_code,
+    product_name_snapshot: item.product_name_snapshot,
+    serial_num: item.serial_num,
+    inventory_status: item.inventory_status
+  };
+}
+
 // Submit one customer withdrawal batch. Every item is validated before any
 // Sheet write so a partially invalid batch cannot withdraw only some tires.
 function submitWithdrawalBatch(payload, authorizedUser) {

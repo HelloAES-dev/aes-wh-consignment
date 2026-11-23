@@ -61,6 +61,11 @@ completed before production deployment.
 | WDR-010 | Ten-tire withdrawal batch is saved | Rows are written efficiently and one Chat notification is generated | NOT_RUN |
 | WDR-011 | One item in a batch fails validation | Entire batch is rejected; no inventory status changes | NOT_RUN |
 | WDR-012 | Photo file is missing, not an image, or outside the configured folder | Batch is rejected before inventory changes | NOT_RUN |
+| WDR-013 | Same photo upload ID is retried after an uncertain response | Existing Drive file is returned; no duplicate image is created | NOT_RUN |
+| WDR-014 | Browser provides invalid JPEG data or a decoded file over 5 MB | Upload is rejected; batch cannot be submitted | NOT_RUN |
+| WDR-015 | Signed-in user lacks withdrawal permission or customer assignment | Withdrawal controls remain hidden; backend rejects actions | NOT_RUN |
+| WDR-016 | Mobile camera image is selected | Browser compresses to JPEG and Shared Drive upload succeeds | NOT_RUN |
+| WDR-017 | User scans the same serial twice in one draft batch | Second scan is rejected locally; only one draft item remains | NOT_RUN |
 
 ## Admin ERP confirmation
 

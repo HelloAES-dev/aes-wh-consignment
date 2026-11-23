@@ -7,8 +7,9 @@ navigation, and the first ADMIN account-management module are implemented. The
 receiving backend and mobile scanning interface are implemented and manually
 verified with real Sheet rows and scanner hardware. Same-request retry and
 simultaneous-scan reliability tests remain before production sign-off. The
-withdrawal batch backend is implemented and awaits Drive-folder configuration,
-photo upload integration, and end-to-end testing.
+withdrawal batch backend, Shared Drive photo upload, and mobile withdrawal page
+are implemented and await end-to-end testing. Google Chat notification and
+Admin ERP confirmation remain the next modules.
 
 ## Purpose
 
@@ -38,6 +39,8 @@ Warehouse shipment
 - The current tire serial format is exactly 10 uppercase English letters or
   digits, such as `D001000955` or `TN05200154`.
 - Photos are stored in the company Google Drive or Shared Drive.
+- Shared Drive uploads use the Apps Script Advanced Drive service with
+  `supportsAllDrives` enabled.
 - Google Chat receives one grouped summary notification per withdrawal batch;
   photos and serial-level details remain in the authenticated Admin page.
 
@@ -112,7 +115,7 @@ style.css
 script.js
 pages/
 ├── receiving/
-├── withdrawal/
+├── withdrawal/       # Scan, photo upload, and batch submission
 ├── admin-accounts/
 └── admin-erp/
 ```

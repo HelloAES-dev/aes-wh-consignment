@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123d38">
+  <meta
+    name="description"
+    content="ระบบสแกนและบันทึกการเบิกสินค้าฝากขาย"
+  >
+  <title>เบิกสินค้าฝากขาย</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="withdrawal.css">
+</head>
+
+<body>
+  <main class="app-shell withdrawal-shell">
+    <header class="app-header withdrawal-header">
+      <div>
+        <p class="header-eyebrow">AES Consignment</p>
+        <h1>เบิกสินค้าฝากขาย</h1>
+        <p>สแกน Serial ถ่ายรูป และส่งรายการ</p>
+      </div>
+      <a class="header-back-link" href="../../">← เมนูหลัก</a>
+    </header>
+
+    <!-- Keep all operational controls hidden until backend authorization. -->
+    <section id="accessCard" class="card access-card">
+      <p class="eyebrow">กำลังตรวจสอบสิทธิ์</p>
+      <h2 id="accessTitle">กรุณารอสักครู่</h2>
+      <p id="accessMessage" class="hint">
+        ระบบกำลังตรวจสอบบัญชีและสิทธิ์เบิกสินค้า
+      </p>
+      <a id="signInLink" class="primary-link hidden" href="../../">
+        กลับไปลงชื่อเข้าใช้
+      </a>
+    </section>
+
+    <section id="withdrawalApplication" class="hidden">
+      <section class="session-bar">
+        <div>
+          <span>ผู้เบิกสินค้า</span>
+          <strong id="authenticatedEmail">—</strong>
+        </div>
+        <div>
+          <span>รหัสลูกค้า</span>
+          <strong id="customerIdentifier">—</strong>
+        </div>
+        <div>
+          <span>รอบการเบิก</span>
+          <strong id="batchIdentifier">—</strong>
+        </div>
+        <button id="newBatchButton" class="outline-button" type="button">
+          เริ่มรอบใหม่
+        </button>
+      </section>
+
+      <!-- The scanner adds only backend-verified tires to the draft batch. -->
+      <section class="card scanner-card">
+        <p class="eyebrow">ขั้นตอนที่ 1</p>
+        <h2>สแกนหมายเลข Serial</h2>
+        <p class="scanner-instruction">
+          สแกนยางหนึ่งเส้น แล้วถ่ายรูปก่อนเพิ่มเส้นถัดไป
+        </p>
+
+        <form id="scannerForm" novalidate>
+          <label for="serialInput">หมายเลข Serial</label>
+          <div class="scanner-input-row">
+            <input
+              id="serialInput"
+              name="serial_num"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              maxlength="10"
+              placeholder="ตัวอย่าง TN05200154"
+              required
+            >
+            <button id="scanButton" class="scan-button" type="submit">
+              ตรวจสอบ
+            </button>
+          </div>
+          <p class="field-help">
+            รองรับตัวอักษรภาษาอังกฤษและตัวเลข รวมทั้งหมด 10 ตัว
+          </p>
+        </form>
+
+        <p
+          id="scanStatus"
+          class="operation-status"
+          role="status"
+          aria-live="polite"
+        ></p>
+      </section>
+
+      <!-- One shared camera input is activated from the selected tire card. -->
+      <input
+        id="photoInput"
+        class="visually-hidden"
+        type="file"
+        accept="image/*"
+        capture="environment"
+      >
+
+      <section class="card batch-card">
+        <div class="section-title-row">
+          <div>
+            <p class="eyebrow">ขั้นตอนที่ 2</p>
+            <h2>รายการรอส่ง</h2>
+          </div>
+          <strong id="itemCount" class="item-count">0 เส้น</strong>
+        </div>
+
+        <div id="withdrawalItemList" class="withdrawal-item-list">
+          <p id="emptyBatchMessage" class="empty-state">
+            ยังไม่มีสินค้าในรอบนี้
+          </p>
+        </div>
+
+        <div id="submissionRetryPanel" class="retry-panel hidden" role="alert">
+          <div>
+            <strong>ยังไม่ทราบผลการส่งรายการ</strong>
+            <p id="submissionRetryMessage"></p>
+          </div>
+          <button id="submissionRetryButton" class="retry-button" type="button">
+            ลองส่งอีกครั้ง
+          </button>
+        </div>
+
+        <button
+          id="submitBatchButton"
+          class="submit-batch-button"
+          type="button"
+          disabled
+        >
+          ยืนยันการเบิกสินค้า
+        </button>
+        <p
+          id="submissionStatus"
+          class="operation-status"
+          role="status"
+          aria-live="polite"
+        ></p>
+      </section>
+
+      <section id="successCard" class="card success-card hidden" role="status">
+        <p class="eyebrow">บันทึกสำเร็จ</p>
+        <h2>ส่งรายการเบิกสินค้าแล้ว</h2>
+        <p id="successMessage"></p>
+        <div id="productSummary" class="product-summary"></div>
+        <button id="nextBatchButton" class="submit-batch-button" type="button">
+          เริ่มรายการใหม่
+        </button>
+      </section>
+    </section>
+  </main>
+
+  <script src="../../assets/app-config.js"></script>
+  <script src="../../assets/auth-session.js"></script>
+  <script src="withdrawal.js"></script>
+</body>
+
+</html>
