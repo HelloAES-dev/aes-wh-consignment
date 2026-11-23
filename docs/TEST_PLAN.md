@@ -49,13 +49,13 @@ completed before production deployment.
 
 | ID | Scenario | Expected result | Status |
 |---|---|---|---|
-| WDR-001 | Customer submits RECEIVED serial and photo | Item becomes WITHDRAWN and request is SUBMITTED | NOT_RUN |
+| WDR-001 | Customer submits RECEIVED serial and photo | Item becomes WITHDRAWN and request is SUBMITTED | PASS |
 | WDR-002 | Customer submits another customer serial | Request is rejected | NOT_RUN |
 | WDR-003 | Customer submits unknown serial | Request is rejected | NOT_RUN |
-| WDR-004 | Photo upload succeeds | Drive ID and URL are stored | NOT_RUN |
+| WDR-004 | Photo upload succeeds | Drive ID and URL are stored | PASS |
 | WDR-005 | Photo upload fails | Request remains visible with FAILED status | NOT_RUN |
 | WDR-006 | Same client request is retried | No duplicate transaction or second inventory transition | NOT_RUN |
-| WDR-007 | Customer submits valid request | Customer can use tire without waiting for Admin | NOT_RUN |
+| WDR-007 | Customer submits valid request | Customer can use tire without waiting for Admin | PASS |
 | WDR-008 | Customer submits a second request for withdrawn serial | Backend rejects request | NOT_RUN |
 | WDR-009 | Customer submits multiple tires together | One batch ID groups one row per serial | NOT_RUN |
 | WDR-010 | Ten-tire withdrawal batch is saved | Rows are written efficiently and one Chat notification is generated | NOT_RUN |
@@ -64,11 +64,20 @@ completed before production deployment.
 | WDR-013 | Same photo upload ID is retried after an uncertain response | Existing Drive file is returned; no duplicate image is created | NOT_RUN |
 | WDR-014 | Browser provides invalid JPEG data or a decoded file over 5 MB | Upload is rejected; batch cannot be submitted | NOT_RUN |
 | WDR-015 | Signed-in user lacks withdrawal permission or customer assignment | Withdrawal controls remain hidden; backend rejects actions | NOT_RUN |
-| WDR-016 | Mobile camera image is selected | Browser compresses to JPEG and Shared Drive upload succeeds | NOT_RUN |
+| WDR-016 | Mobile camera image is selected | Browser compresses to JPEG and Shared Drive upload succeeds | PASS |
 | WDR-017 | User scans the same serial twice in one draft batch | Second scan is rejected locally; only one draft item remains | NOT_RUN |
 | WDR-018 | User clicks `ลบรูป` on one draft item | Only that photo reference is cleared; the tire remains in the batch | NOT_RUN |
 | WDR-019 | User clicks `นำรายการนี้ออก` | Only that tire is removed from the unsent batch | NOT_RUN |
 | WDR-020 | User clicks `ยกเลิกรอบเบิก` | The complete unsent draft batch is cleared | NOT_RUN |
+
+The first complete withdrawal test was manually verified on 2026-11-23 using
+the deployed mobile page and the Google Sheets backend. Test serial `TN03500014`
+belonged to customer `30220-001` and was submitted by the authorized account
+`hello@aesen.co.th`. The result was one `SUBMITTED` withdrawal row, one
+`WITHDRAWN` inventory transition, one `UPLOADED` photo record in the configured
+Shared Drive folder, and `chat_notification_status = PENDING`. The source test
+row did not contain ORD or product snapshot values, so those fields remained
+blank as expected. Retry, multi-item, rejection, and Chat tests remain open.
 
 ## Admin ERP confirmation
 

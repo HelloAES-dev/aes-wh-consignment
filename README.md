@@ -8,8 +8,9 @@ receiving backend and mobile scanning interface are implemented and manually
 verified with real Sheet rows and scanner hardware. Same-request retry and
 simultaneous-scan reliability tests remain before production sign-off. The
 withdrawal batch backend, Shared Drive photo upload, and mobile withdrawal page
-are implemented and await end-to-end testing. Google Chat notification and
-Admin ERP confirmation remain the next modules.
+have passed their first complete end-to-end test. Batch retry, rejection,
+multi-item, and concurrency tests remain before production sign-off. Google
+Chat notification and Admin ERP confirmation remain the next modules.
 
 ## Purpose
 
