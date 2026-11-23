@@ -1,12 +1,3 @@
-// Public frontend configuration. These identifiers do not grant access;
-// authorization is enforced by the Apps Script backend for every request.
-const APP_CONFIG = Object.freeze({
-  GOOGLE_CLIENT_ID:
-    '527911330380-g9ts5kq4v519vkndkv5lblj1ksjhl4so.apps.googleusercontent.com',
-  BACKEND_URL:
-    'https://script.google.com/macros/s/AKfycbxu-xiD4nNE0VxzS5hnZNqlOrWWcqch6op4UGbmuDfhNhoX7Mcj0uY_XLgQloY6S9tI/exec'
-});
-
 // These mode definitions provide Thai labels without allowing the browser to
 // decide authorization. Backend permission checks remain authoritative.
 const APPLICATION_MODES = Object.freeze({
@@ -69,8 +60,9 @@ const userInterface = {
   authorizedUserList: getElementById('authorizedUserList')
 };
 
-// Authentication and form state stay in memory and are never persisted to
-// localStorage. A page refresh therefore requires a fresh Google credential.
+// Authentication and form state stay in memory. The short-lived token is also
+// copied to sessionStorage so an authorized user can open an operational page
+// in the same browser tab without placing credentials in a URL.
 let currentIdToken = '';
 let currentUser = null;
 let selectedCustomer = null;
@@ -176,6 +168,7 @@ function showAuthenticatedApplication(user) {
     ...user,
     permissions: getNormalizedUserPermissions(user)
   };
+  window.authenticationSession.save(currentIdToken, currentUser);
   userInterface.authenticationCard.classList.add('hidden');
   userInterface.authenticatedUser.textContent = currentUser.email;
   userInterface.authenticatedUser.classList.remove('hidden');
@@ -249,7 +242,37 @@ function openMode(modeKey) {
     return;
   }
 
+  if (modeKey === 'receiving') {
+    window.location.assign('pages/receiving/');
+    return;
+  }
+
   showModulePlaceholder(modeKey);
+}
+
+// Restore a same-tab session when returning from an operational page. The
+// backend revalidates the token before any application mode is displayed.
+async function initializeApplication() {
+  const storedSession = window.authenticationSession.read();
+
+  if (!storedSession) {
+    initializeGoogleSignIn();
+    return;
+  }
+
+  currentIdToken = storedSession.idToken;
+  setAuthenticationStatus('กำลังตรวจสอบเซสชัน...');
+
+  try {
+    const result = await sendBackendRequest('authCheck');
+    showAuthenticatedApplication(result.user);
+  } catch (error) {
+    console.error('Stored authentication session failed:', error);
+    currentIdToken = '';
+    window.authenticationSession.clear();
+    setAuthenticationStatus('กรุณาลงชื่อเข้าใช้อีกครั้ง');
+    initializeGoogleSignIn();
+  }
 }
 
 function getAllowedModes(permissions = {}) {
@@ -680,7 +703,7 @@ async function confirmAndSetUserActive(user, nextIsActive) {
 }
 
 // Register event handlers after the page markup is available.
-window.addEventListener('load', initializeGoogleSignIn);
+window.addEventListener('load', initializeApplication);
 userInterface.placeholderBackButton.addEventListener('click', showHomeScreen);
 userInterface.adminBackButton.addEventListener('click', showHomeScreen);
 userInterface.permissionWithdraw.addEventListener(

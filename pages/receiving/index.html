@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f8">
+  <meta
+    name="description"
+    content="ระบบตรวจรับสินค้าฝากขายด้วยหมายเลข Serial"
+  >
+  <title>ตรวจรับสินค้าฝากขาย</title>
+
+  <!-- Kanit is the primary font used across AES worker applications. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- Reuse the shared AES theme, then add receiving-specific styles. -->
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="receiving.css">
+</head>
+
+<body>
+  <main class="app-shell receiving-shell">
+    <!-- Page identity and authenticated worker information. -->
+    <header class="app-header receiving-header">
+      <div>
+        <p class="header-eyebrow">AES Consignment</p>
+        <h1>ตรวจรับสินค้าฝากขาย</h1>
+        <p>สแกน Serial เมื่อสินค้ามาถึงคลัง</p>
+      </div>
+      <a class="header-back-link" href="../../">กลับเมนู</a>
+    </header>
+
+    <!-- This gate remains visible until backend authentication succeeds. -->
+    <section id="accessCard" class="card access-card">
+      <p class="eyebrow">กำลังตรวจสอบสิทธิ์</p>
+      <h2 id="accessTitle">กรุณารอสักครู่</h2>
+      <p id="accessMessage" class="hint" role="status" aria-live="polite">
+        ระบบกำลังตรวจสอบบัญชีและสิทธิ์ตรวจรับสินค้า
+      </p>
+      <a id="signInLink" class="primary-link hidden" href="../../">
+        กลับไปลงชื่อเข้าใช้
+      </a>
+    </section>
+
+    <!-- Receiving controls appear only after backend permission validation. -->
+    <section id="receivingApplication" class="hidden">
+      <section class="session-bar" aria-label="ข้อมูลรอบตรวจรับ">
+        <div>
+          <span>ผู้ตรวจรับ</span>
+          <strong id="authenticatedEmail"></strong>
+        </div>
+        <div>
+          <span>รอบตรวจรับ</span>
+          <strong id="batchIdentifier"></strong>
+        </div>
+        <button id="newBatchButton" class="outline-button" type="button">
+          เริ่มรอบใหม่
+        </button>
+      </section>
+
+      <!-- Live counters help the checker reconcile the physical tire count. -->
+      <section class="scan-statistics" aria-label="สรุปการสแกน">
+        <article class="stat-card">
+          <span>สแกนแล้ว</span>
+          <strong id="scannedCount">0</strong>
+        </article>
+        <article class="stat-card is-accepted">
+          <span>รับเข้าสำเร็จ</span>
+          <strong id="acceptedCount">0</strong>
+        </article>
+        <article class="stat-card is-duplicate">
+          <span>สแกนซ้ำ</span>
+          <strong id="duplicateCount">0</strong>
+        </article>
+        <article class="stat-card is-error">
+          <span>ไม่สำเร็จ</span>
+          <strong id="errorCount">0</strong>
+        </article>
+      </section>
+
+      <!-- Scanner input stays prominent and submits when the scanner sends Enter. -->
+      <section class="card scanner-card">
+        <p class="eyebrow">สแกนต่อเนื่อง</p>
+        <h2>สแกนหมายเลข Serial</h2>
+        <p class="scanner-instruction">
+          ใช้เครื่องสแกน QR แล้วรอผลก่อนสแกนเส้นถัดไป
+        </p>
+
+        <form id="scannerForm" novalidate>
+          <label for="serialInput">หมายเลข Serial</label>
+          <div class="scanner-input-row">
+            <input
+              id="serialInput"
+              name="serial_num"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              placeholder="ตัวอย่าง TN05200154"
+              aria-describedby="serialHelp"
+              required
+            >
+            <button id="scanButton" class="scan-button" type="submit">
+              ตรวจรับ
+            </button>
+          </div>
+          <p id="serialHelp" class="field-help">
+            รองรับตัวอักษรภาษาอังกฤษและตัวเลข รวมทั้งหมด 10 ตัว
+          </p>
+        </form>
+
+        <!-- A failed network request must retry with the original request ID. -->
+        <div id="retryPanel" class="retry-panel hidden" role="alert">
+          <div>
+            <strong>ยังไม่ทราบผลการบันทึก</strong>
+            <p id="retryMessage"></p>
+          </div>
+          <button id="retryButton" class="retry-button" type="button">
+            ลองส่งอีกครั้ง
+          </button>
+        </div>
+      </section>
+
+      <!-- The most recent result is large enough to read at scanning distance. -->
+      <section
+        id="lastResultCard"
+        class="card result-card is-waiting"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <p class="eyebrow">ผลการสแกนล่าสุด</p>
+        <div class="result-content">
+          <div id="resultIcon" class="result-icon" aria-hidden="true">—</div>
+          <div>
+            <h2 id="resultTitle">พร้อมสแกน</h2>
+            <p id="resultSerial">ยังไม่มีรายการ</p>
+            <p id="resultMessage" class="result-message">
+              ช่องสแกนพร้อมรับข้อมูลจากเครื่องสแกน
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Keep a short local history for immediate visual reconciliation. -->
+      <section class="card history-card">
+        <div class="section-title-row">
+          <div>
+            <p class="eyebrow">รายการล่าสุด</p>
+            <h2>ประวัติในรอบนี้</h2>
+          </div>
+          <span class="history-limit">แสดง 10 รายการล่าสุด</span>
+        </div>
+        <ol id="scanHistory" class="scan-history">
+          <li id="emptyHistory" class="empty-state">ยังไม่มีรายการสแกน</li>
+        </ol>
+      </section>
+    </section>
+  </main>
+
+  <!-- Shared configuration/session load before page-specific behavior. -->
+  <script src="../../assets/app-config.js"></script>
+  <script src="../../assets/auth-session.js"></script>
+  <script src="receiving.js"></script>
+</body>
+
+</html>

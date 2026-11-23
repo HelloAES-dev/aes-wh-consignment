@@ -12,8 +12,9 @@ pages/
 └── admin-erp/       ERP confirmation queue
 ```
 
-The folders are reserved now so future modules have a stable location. Build
-and connect one module at a time; do not place Apps Script backend files here.
+The receiving module is implemented. The other folders are reserved so future
+modules have a stable location. Build and connect one module at a time; do not
+place Apps Script backend files here.
 
 Each completed module follows this naming convention:
 

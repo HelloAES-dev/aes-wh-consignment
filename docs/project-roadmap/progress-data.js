@@ -17,7 +17,7 @@ window.projectProgress = Object.freeze({
     'warehouse-shipment': 'planned',
 
     'receiving-auth': 'done',
-    'receiving-scan': 'planned',
+    'receiving-scan': 'in_progress',
     'receiving-transition': 'in_progress',
     'receiving-log': 'in_progress',
     'withdrawal-auth': 'planned',

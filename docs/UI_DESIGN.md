@@ -58,6 +58,13 @@ Always-focused scanner input
 
 The 2D USB-C scanner should be configured to send an Enter suffix after each QR value. After every scan, the input is cleared and refocused.
 
+The page generates one `receiving_batch_id` per receiving session and one
+stable `client_request_id` per scan. If the network result is uncertain, the
+scanner is paused and the worker retries the same request ID before continuing.
+The page displays scanned, accepted, duplicate, and error counts plus the ten
+most recent results. Starting a new batch clears only this local display state;
+it never deletes Sheet records.
+
 An accepted scan changes the matching inventory item from `READY_TO_SHIP` to
 `RECEIVED`. There is no manual shipment button for a driver or warehouse
 worker.
@@ -128,6 +135,11 @@ Each completed page keeps its own readable `index.html`, `<module>.css`, and
 `receiving/index.html`, `receiving/receiving.css`, and `receiving/receiving.js`.
 Authentication and backend authorization must still be validated when entering
 any operational page; a page URL never grants permission.
+
+The root page keeps the short-lived Google ID token in same-tab
+`sessionStorage` for navigation to operational pages. Tokens must never appear
+in URLs or `localStorage`. Every operational page calls `authCheck` again before
+showing controls, and every business action remains authorized by the backend.
 
 ## Google Chat link
 

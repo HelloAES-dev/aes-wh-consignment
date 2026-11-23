@@ -4,8 +4,8 @@
 
 Foundation phase. GitHub Pages deployment, Google Sign-In, permission-based home
 navigation, and the first ADMIN account-management module are implemented. The
-receiving backend now validates and records individual serial scans; its worker
-UI and production testing are still pending.
+receiving backend and mobile scanning interface are implemented; deployment and
+end-to-end testing with real Sheet rows and scanner hardware are still pending.
 
 ## Purpose
 
@@ -40,6 +40,8 @@ Warehouse shipment
 ## Current authentication and access management
 
 - Google Identity Services renders the sign-in button on the root page.
+- A short-lived ID token is kept in same-tab `sessionStorage` so an authorized
+  user can open an operational page without placing credentials in a URL.
 - Apps Script verifies the Google ID token and checks
   `CONFIG : อีเมลที่ได้รับสิทธิ์`.
 - Backend permissions determine which application modes are visible; workers
@@ -95,9 +97,9 @@ pages/
 └── admin-erp/
 ```
 
-GitHub Actions publishes the root entry files and the complete `pages/`
-directory. Backend files and project documentation are not included in the
-GitHub Pages artifact.
+GitHub Actions publishes the root entry files and the complete `pages/` and
+`assets/` directories. Backend files and project documentation are not included
+in the GitHub Pages artifact.
 
 ## Deliberately postponed
 
