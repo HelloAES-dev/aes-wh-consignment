@@ -92,6 +92,11 @@ blank as expected. Retry, multi-item, rejection, and Chat tests remain open.
 | ADM-007 | Withdrawal batch includes photos | Chat card excludes photos; Admin page can show them | NOT_RUN |
 | ADM-008 | Admin repeats approval for an APPROVED batch | Existing approval returns safely; original audit identity is not overwritten | PASS |
 | ADM-009 | Batch rows contain mixed or non-SUBMITTED statuses | Entire approval is rejected; no row is changed | NOT_RUN |
+| ADM-010 | Admin opens ERP page without a valid same-tab session | Queue remains hidden and sign-in link appears | NOT_RUN |
+| ADM-011 | Non-admin opens the ERP page URL | Queue remains hidden; frontend and backend reject access | NOT_RUN |
+| ADM-012 | Approval request fails or times out | Batch card remains visible and can be retried safely | NOT_RUN |
+| ADM-013 | Admin opens a valid `?batch=` URL | Matching pending card is focused after authentication | NOT_RUN |
+| ADM-014 | Admin approves a batch from the queue | Card disappears and pending counters update | NOT_RUN |
 
 ## Authorized-account management
 

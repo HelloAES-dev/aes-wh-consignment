@@ -98,7 +98,7 @@ The ADMIN account-management screen shows:
 - A larger type scale for headings, labels, form controls, account details, and
   actions so the information remains comfortable to read on laptop screens.
 
-The later ERP-confirmation screen will show:
+The ERP-confirmation screen shows:
 
 - Pending withdrawal batches.
 - Customer code and name.
@@ -106,6 +106,17 @@ The later ERP-confirmation screen will show:
 - Submission timestamp.
 - A link or detail view for serials and uploaded photos.
 - One `APPROVED` button after the Admin checks the separate ERP system.
+- Two compact counters for pending batches and total tires.
+- Oldest pending batches first.
+- Expandable serial details with Drive photo links instead of automatically
+  loading every image.
+- An optional `?batch=<withdrawal_batch_id>` URL that focuses the batch linked
+  from Google Chat after normal authentication succeeds.
+- A short confirmation dialog before the approval request is submitted.
+
+After approval succeeds, the card is removed from the pending queue and the
+counters update. A backend or network failure leaves the card available for a
+safe retry.
 
 The first version does not include an in-app checklist, ERP integration, or
 photo attachments in the Google Chat card. The Chat card contains only the

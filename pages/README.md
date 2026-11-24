@@ -12,11 +12,13 @@ pages/
 └── admin-erp/       ERP confirmation queue
 ```
 
-The receiving module is implemented and its core workflow has passed the first
-manual Google Sheets tests. The withdrawal module now includes serial lookup,
-camera-photo compression and upload, and batch submission; it still requires
-end-to-end mobile testing. The remaining folders are reserved so future
-modules have a stable location. Do not place Apps Script backend files here.
+The receiving module is implemented and its core workflow has passed manual
+Google Sheets and mobile tests. The withdrawal module includes serial lookup,
+camera-photo compression and upload, and batch submission; its first complete
+end-to-end test has passed. The Admin ERP module contains the authenticated
+pending queue and approval interface and still requires deployed acceptance
+testing. Account management currently remains embedded in the root application.
+Do not place Apps Script backend files here.
 
 Each completed module follows this naming convention:
 

@@ -17,6 +17,11 @@ const APPLICATION_MODES = Object.freeze({
     eyebrow: 'ผู้ดูแลระบบ',
     title: 'จัดการบัญชีผู้ใช้งาน',
     description: 'เพิ่มบัญชี กำหนดสิทธิ์ และเปิดหรือปิดการใช้งาน'
+  }),
+  adminErp: Object.freeze({
+    eyebrow: 'ผู้ดูแลระบบ',
+    title: 'ตรวจสอบรายการเปิดออเดอร์ ERP',
+    description: 'ตรวจสอบรายการเบิกและยืนยันเมื่อเปิดออเดอร์เรียบร้อย'
   })
 });
 
@@ -252,6 +257,11 @@ function openMode(modeKey) {
     return;
   }
 
+  if (modeKey === 'adminErp') {
+    window.location.assign('pages/admin-erp/');
+    return;
+  }
+
   showModulePlaceholder(modeKey);
 }
 
@@ -293,6 +303,7 @@ function getAllowedModes(permissions = {}) {
 
   if (permissions.is_admin) {
     allowedModes.push('adminAccounts');
+    allowedModes.push('adminErp');
   }
 
   return allowedModes;

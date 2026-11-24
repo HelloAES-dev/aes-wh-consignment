@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f8">
+  <meta
+    name="description"
+    content="หน้าผู้ดูแลระบบสำหรับยืนยันรายการเปิดออเดอร์ ERP"
+  >
+  <title>รายการรอเปิดออเดอร์ ERP</title>
+
+  <!-- Kanit is the primary font used across AES worker applications. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- Reuse the shared AES theme, then add Admin-ERP-specific styles. -->
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="admin-erp.css">
+</head>
+
+<body>
+  <main class="app-shell admin-erp-shell">
+    <!-- Page identity and route back to the permission-based home screen. -->
+    <header class="app-header admin-erp-header">
+      <div>
+        <p class="header-eyebrow">AES Consignment</p>
+        <h1>รายการรอเปิดออเดอร์ ERP</h1>
+        <p>ยืนยันหลังจากเปิดออเดอร์ในระบบ ERP เรียบร้อยแล้ว</p>
+      </div>
+      <a class="header-back-link" href="../../">กลับเมนู</a>
+    </header>
+
+    <!-- Keep queue information hidden until backend authorization succeeds. -->
+    <section id="accessCard" class="card access-card">
+      <p class="eyebrow">กำลังตรวจสอบสิทธิ์</p>
+      <h2 id="accessTitle">กรุณารอสักครู่</h2>
+      <p id="accessMessage" class="hint" role="status" aria-live="polite">
+        ระบบกำลังตรวจสอบบัญชีและสิทธิ์ผู้ดูแลระบบ
+      </p>
+      <a id="signInLink" class="primary-link hidden" href="../../">
+        กลับไปลงชื่อเข้าใช้
+      </a>
+    </section>
+
+    <!-- Admin queue appears only after a fresh backend permission check. -->
+    <section id="adminErpApplication" class="hidden">
+      <section class="admin-session-bar" aria-label="ข้อมูลผู้ดูแลระบบ">
+        <div>
+          <span>ผู้ดูแลระบบ</span>
+          <strong id="authenticatedEmail"></strong>
+        </div>
+        <button id="refreshQueueButton" class="outline-button" type="button">
+          โหลดรายการใหม่
+        </button>
+      </section>
+
+      <!-- Compact counters show the size of the current ERP work queue. -->
+      <section class="queue-statistics" aria-label="สรุปรายการรอดำเนินการ">
+        <article class="queue-stat-card">
+          <span>รอบเบิกที่รอเปิดออเดอร์</span>
+          <strong id="pendingBatchCount">0</strong>
+        </article>
+        <article class="queue-stat-card">
+          <span>จำนวนยางทั้งหมด</span>
+          <strong id="pendingItemCount">0</strong>
+        </article>
+      </section>
+
+      <section class="card queue-card">
+        <div class="section-title-row queue-title-row">
+          <div>
+            <p class="eyebrow">งานที่รอดำเนินการ</p>
+            <h2>รายการเบิกสินค้าจากลูกค้า</h2>
+          </div>
+        </div>
+        <p
+          id="queueStatus"
+          class="queue-status"
+          role="status"
+          aria-live="polite"
+        >
+          กำลังโหลดรายการ...
+        </p>
+
+        <!-- Cards are created with DOM methods; backend values are never HTML. -->
+        <div id="pendingBatchList" class="pending-batch-list"></div>
+
+        <div id="emptyQueueState" class="empty-queue-state hidden">
+          <div class="empty-queue-icon" aria-hidden="true">✓</div>
+          <h2>ไม่มีรายการรอเปิดออเดอร์</h2>
+          <p>รายการที่ได้รับอนุมัติแล้วจะไม่แสดงในหน้านี้</p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- One short confirmation prevents accidental ERP completion records. -->
+  <dialog id="approvalDialog" class="approval-dialog">
+    <div class="approval-dialog-content">
+      <p class="eyebrow">ยืนยันการดำเนินการ</p>
+      <h2>เปิดออเดอร์ใน ERP เรียบร้อยแล้วใช่หรือไม่</h2>
+      <p id="approvalDialogDescription" class="dialog-description"></p>
+      <p class="dialog-warning">
+        เมื่อยืนยันแล้ว ระบบจะบันทึกชื่อผู้อนุมัติและเวลา
+      </p>
+      <div class="dialog-actions">
+        <button id="cancelApprovalButton" class="outline-button" type="button">
+          ยกเลิก
+        </button>
+        <button id="confirmApprovalButton" class="approval-button" type="button">
+          ยืนยันว่าเปิดออเดอร์แล้ว
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Shared configuration/session load before page-specific behavior. -->
+  <script src="../../assets/app-config.js"></script>
+  <script src="../../assets/auth-session.js"></script>
+  <script src="admin-erp.js"></script>
+</body>
+
+</html>

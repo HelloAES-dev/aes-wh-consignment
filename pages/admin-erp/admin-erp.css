@@ -1,0 +1,438 @@
+/* ---------- Admin ERP page layout ---------- */
+
+.admin-erp-shell {
+  width: min(100%, 980px);
+}
+
+.admin-erp-header {
+  align-items: center;
+}
+
+.header-back-link,
+.primary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 9px 14px;
+  color: var(--accent-blue);
+  font-weight: 500;
+  text-decoration: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.access-card {
+  max-width: 560px;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+}
+
+.access-card .primary-link {
+  margin-top: 18px;
+}
+
+/* ---------- Admin identity and queue counters ---------- */
+
+.admin-session-bar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.admin-session-bar div {
+  min-width: 0;
+}
+
+.admin-session-bar span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.admin-session-bar strong {
+  display: block;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+
+.queue-statistics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.queue-stat-card {
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-top: 4px solid var(--accent-orange);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.queue-stat-card span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.queue-stat-card strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.8rem;
+}
+
+/* ---------- Pending queue and batch cards ---------- */
+
+.queue-card {
+  border-top: 4px solid var(--accent-blue);
+}
+
+.queue-title-row {
+  align-items: flex-start;
+}
+
+.queue-status {
+  min-height: 24px;
+  margin: 12px 0 0;
+  color: var(--text-muted);
+}
+
+.queue-status.is-error {
+  color: var(--accent-red);
+}
+
+.queue-status.is-success {
+  color: var(--accent-green);
+}
+
+.pending-batch-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.admin-batch-card {
+  padding: 18px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-left: 6px solid var(--accent-orange);
+  border-radius: 9px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    opacity 0.2s;
+}
+
+.admin-batch-card.is-focused {
+  border-color: var(--accent-blue);
+  border-left-color: var(--accent-blue);
+  box-shadow: 0 0 0 4px rgba(26, 111, 224, 0.12);
+}
+
+.admin-batch-card.is-processing {
+  opacity: 0.65;
+}
+
+.batch-heading-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.batch-customer-code {
+  margin: 0;
+  font-size: 1.18rem;
+  overflow-wrap: anywhere;
+}
+
+.batch-customer-name {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+}
+
+.pending-badge {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  color: #704b00;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: #fff3d6;
+  border: 1px solid #e5a000;
+  border-radius: 999px;
+}
+
+.batch-metadata {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px 0;
+  margin-top: 14px;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.batch-metadata span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.batch-metadata strong {
+  display: block;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.product-lines {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.product-line,
+.batch-total-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+}
+
+.product-line strong,
+.product-line span {
+  display: block;
+}
+
+.product-code {
+  font-weight: 600;
+}
+
+.product-name {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.product-quantity,
+.batch-total-row strong {
+  white-space: nowrap;
+}
+
+.batch-total-row {
+  margin-top: 10px;
+  background: #eef5ff;
+  border-color: #b8d2f5;
+}
+
+/* ---------- Serial and photo details ---------- */
+
+.batch-details {
+  margin-top: 14px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+}
+
+.batch-details summary {
+  padding: 11px 12px;
+  color: var(--accent-blue);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.batch-details[open] summary {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.batch-item-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.batch-item-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.batch-item-row:last-child {
+  border-bottom: 0;
+}
+
+.item-serial {
+  display: block;
+  font-family: ui-monospace, "Cascadia Code", "Courier New", monospace;
+  font-weight: 700;
+}
+
+.item-product {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.photo-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 7px 10px;
+  color: var(--accent-blue);
+  font-size: 0.86rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid #9fc2ef;
+  border-radius: 7px;
+}
+
+.photo-unavailable {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.approve-batch-button,
+.approval-button {
+  min-height: 48px;
+  padding: 10px 18px;
+  color: #ffffff;
+  font-weight: 600;
+  background: var(--accent-green);
+  border: 1px solid var(--accent-green);
+  border-radius: 8px;
+}
+
+.approve-batch-button {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.approve-batch-button:hover:not(:disabled),
+.approval-button:hover:not(:disabled) {
+  background: var(--accent-green-hover);
+  border-color: var(--accent-green-hover);
+}
+
+/* ---------- Empty state and confirmation dialog ---------- */
+
+.empty-queue-state {
+  padding: 38px 16px 24px;
+  text-align: center;
+}
+
+.empty-queue-icon {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 14px;
+  color: #ffffff;
+  font-size: 1.7rem;
+  font-weight: 700;
+  place-items: center;
+  background: var(--accent-green);
+  border-radius: 50%;
+}
+
+.empty-queue-state h2 {
+  margin-bottom: 6px;
+}
+
+.empty-queue-state p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.approval-dialog {
+  width: min(calc(100% - 32px), 520px);
+  padding: 0;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.approval-dialog::backdrop {
+  background: rgba(18, 23, 29, 0.58);
+}
+
+.approval-dialog-content {
+  padding: 22px;
+}
+
+.dialog-description,
+.dialog-warning {
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.dialog-warning {
+  padding: 10px 12px;
+  background: #fff7e6;
+  border: 1px solid #e5a000;
+  border-radius: 7px;
+}
+
+.dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* ---------- Responsive adjustments ---------- */
+
+@media (max-width: 700px) {
+  .admin-session-bar,
+  .batch-heading-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-session-bar button {
+    width: 100%;
+  }
+
+  .batch-metadata {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .queue-statistics,
+  .dialog-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-item-row {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .photo-link {
+    width: 100%;
+  }
+}

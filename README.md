@@ -9,10 +9,11 @@ verified with real Sheet rows and scanner hardware. Same-request retry and
 simultaneous-scan reliability tests remain before production sign-off. The
 withdrawal batch backend, Shared Drive photo upload, and mobile withdrawal page
 have passed their first complete end-to-end test. Batch retry, rejection,
-multi-item, and concurrency tests remain before production sign-off. Google
-The Admin ERP backend now lists grouped pending batches and confirms an entire
-batch with locking, audit fields, and idempotent retries. Its Admin interface
-and Google Chat notification remain the next modules.
+multi-item, and concurrency tests remain before production sign-off. The Admin
+ERP backend now lists grouped pending batches and confirms an entire batch with
+locking, audit fields, and idempotent retries. Its dedicated queue interface is
+implemented and awaits deployed desktop/mobile acceptance testing. Google Chat
+notification remains the next module.
 
 ## Purpose
 
@@ -122,7 +123,7 @@ pages/
 ├── receiving/
 ├── withdrawal/       # Scan, photo upload, and batch submission
 ├── admin-accounts/
-└── admin-erp/
+└── admin-erp/        # Pending withdrawal queue and ERP confirmation
 ```
 
 GitHub Actions publishes the root entry files and the complete `pages/` and
