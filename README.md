@@ -115,6 +115,8 @@ require an in-app checklist.
 - `docs/TEST_PLAN.md` — acceptance scenarios before deployment.
 - `docs/NEXT_MIGRATION.md` — future Supabase/database migration strategy and
   Google Sheets reporting model.
+- `docs/WAREHOUSE_REGISTRATION_BLUEPRINT.md` — reusable handoff specification
+  for building the warehouse ORD/LOT/SERIAL registration section.
 - `docs/project-roadmap/` — owner-facing HTML progress checklist for the three operational flows and supporting foundation work.
 - `docs/project-log/` — daily project summaries created with `SUMMARIZE`.
 - `AGENTS.md` — coding and Codex working instructions.
