@@ -23,6 +23,18 @@ const roadmapPhases = [
           'Decide which existing warehouse application screens and users will own this section.'
       },
       {
+        id: 'warehouse-erp-cleaning',
+        title: 'Clean and validate the ERP order source',
+        detail:
+          'Prepare a trusted import from the raw ERP export before workers use ORD and lot lookups.'
+      },
+      {
+        id: 'warehouse-erp-reference',
+        title: 'Build the curated ORD and lot reference data',
+        detail:
+          'Maintain one validated ORD_NUM plus LOT_NUM relationship with customer and product snapshots.'
+      },
+      {
         id: 'warehouse-input',
         title: 'Build ORD, lot, and serial capture',
         detail:

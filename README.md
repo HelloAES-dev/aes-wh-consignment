@@ -14,7 +14,8 @@ ERP backend now lists grouped pending batches and confirms an entire batch with
 locking, audit fields, and idempotent retries. Its dedicated queue interface is
 implemented and has passed the first deployed acceptance test with two
 withdrawal batches. Google Chat notification and its Admin-ERP delivery-status
-indicators are implemented and awaiting deployed acceptance tests.
+indicators are implemented. A fresh `TEST-003` withdrawal passed the first
+Chat delivery test; multi-product, failure, and Admin-link tests remain.
 
 ## Purpose
 

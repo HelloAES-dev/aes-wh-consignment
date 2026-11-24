@@ -104,12 +104,12 @@ blank as expected. Retry, multi-item, rejection, and Chat tests remain open.
 
 | ID | Scenario | Expected result | Status |
 |---|---|---|---|
-| CHAT-001 | New withdrawal batch commits successfully | One grouped Chat card is sent after the Sheet transaction | NOT_RUN |
+| CHAT-001 | New withdrawal batch commits successfully | One grouped Chat card is sent after the Sheet transaction | PASS |
 | CHAT-002 | Batch contains repeated and different product codes | Card groups matching products and shows correct quantities and total | NOT_RUN |
-| CHAT-003 | Batch contains photos and serial numbers | Card contains neither photos nor the serial-level list | NOT_RUN |
+| CHAT-003 | Batch contains photos and serial numbers | Card contains neither photos nor the serial-level list | PASS |
 | CHAT-004 | Admin opens the card link | Admin page opens with the batch query after normal authentication | NOT_RUN |
 | CHAT-005 | Webhook rejects or times out | Rows remain SUBMITTED, Chat status becomes FAILED, and no automatic retry occurs | NOT_RUN |
-| CHAT-006 | Chat accepts the message | Every batch row becomes SENT with notification time and returned message name | NOT_RUN |
+| CHAT-006 | Chat accepts the message | Every batch row becomes SENT with notification time and returned message name | PASS |
 
 The first deployed Admin-ERP acceptance milestone was manually verified on
 2026-11-24. The Admin page listed pending withdrawal batches, approval changed

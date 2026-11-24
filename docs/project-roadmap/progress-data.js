@@ -9,7 +9,9 @@ window.projectProgress = Object.freeze({
   projectName: 'wh-consignment',
   lastReviewed: '2026-11-24',
   taskStatus: Object.freeze({
-    'warehouse-scope': 'planned',
+    'warehouse-scope': 'done',
+    'warehouse-erp-cleaning': 'planned',
+    'warehouse-erp-reference': 'planned',
     'warehouse-input': 'in_progress',
     'warehouse-resolution': 'planned',
     'warehouse-record': 'planned',
@@ -29,7 +31,7 @@ window.projectProgress = Object.freeze({
     'admin-accounts': 'in_progress',
     'admin-queue': 'done',
     'admin-approval': 'done',
-    'admin-chat': 'in_progress',
+    'admin-chat': 'done',
     'admin-audit': 'in_progress',
 
     'foundation-data': 'done',
