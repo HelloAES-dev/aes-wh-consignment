@@ -84,13 +84,13 @@ blank as expected. Retry, multi-item, rejection, and Chat tests remain open.
 | ID | Scenario | Expected result | Status |
 |---|---|---|---|
 | ADM-001 | Admin opens grouped Chat link | Correct withdrawal batch opens | NOT_RUN |
-| ADM-002 | Admin clicks APPROVED for a SUBMITTED request | Request becomes APPROVED and Admin identity is recorded | NOT_RUN |
+| ADM-002 | Admin clicks APPROVED for a SUBMITTED request | Request becomes APPROVED and Admin identity is recorded | PASS |
 | ADM-003 | ERP order is not ready | Request remains SUBMITTED; no approval occurs | NOT_RUN |
 | ADM-004 | Two admins confirm ERP simultaneously | Only one confirmation succeeds | NOT_RUN |
 | ADM-005 | Customer calls ERP-confirmation endpoint | Backend rejects request | NOT_RUN |
 | ADM-006 | Batch contains multiple product codes | Chat card shows grouped products and calculated quantities | NOT_RUN |
 | ADM-007 | Withdrawal batch includes photos | Chat card excludes photos; Admin page can show them | NOT_RUN |
-| ADM-008 | Admin repeats approval for an APPROVED batch | Existing approval returns safely; original audit identity is not overwritten | NOT_RUN |
+| ADM-008 | Admin repeats approval for an APPROVED batch | Existing approval returns safely; original audit identity is not overwritten | PASS |
 | ADM-009 | Batch rows contain mixed or non-SUBMITTED statuses | Entire approval is rejected; no row is changed | NOT_RUN |
 
 ## Authorized-account management
