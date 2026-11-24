@@ -143,6 +143,7 @@ function createWithdrawalItemForClient(item) {
 function submitWithdrawalBatch(payload, authorizedUser) {
   const request = normalizeWithdrawalRequest(payload);
   const requestError = validateWithdrawalRequest(request);
+  let committedWithdrawalRecords = null;
 
   if (requestError) {
     return requestError;
@@ -233,11 +234,16 @@ function submitWithdrawalBatch(payload, authorizedUser) {
     );
     appendWithdrawalRecords(withdrawalLog, withdrawalRecords);
     SpreadsheetApp.flush();
-
-    return createWithdrawalResponse(withdrawalRecords, false);
+    committedWithdrawalRecords = withdrawalRecords;
   } finally {
     scriptLock.releaseLock();
   }
+
+  // Chat runs only after the inventory and withdrawal rows are committed and
+  // the transaction lock has been released. A failed notification never rolls
+  // back or rejects the completed withdrawal.
+  notifyWithdrawalBatchOnce(committedWithdrawalRecords);
+  return createWithdrawalResponse(committedWithdrawalRecords, false);
 }
 
 // Normalize camelCase browser fields and snake_case API fields into one
@@ -537,6 +543,7 @@ function createWithdrawalResponse(records, idempotent) {
       customer_id: firstRecord.customer_id,
       customer_name_snapshot: firstRecord.customer_name_snapshot,
       request_status: firstRecord.request_status,
+      chat_notification_status: firstRecord.chat_notification_status,
       item_count: records.length,
       products: createWithdrawalProductSummary(records),
       items: records.map(function (record) {

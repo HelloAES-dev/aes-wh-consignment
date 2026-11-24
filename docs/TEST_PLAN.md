@@ -97,6 +97,19 @@ blank as expected. Retry, multi-item, rejection, and Chat tests remain open.
 | ADM-012 | Approval request fails or times out | Batch card remains visible and can be retried safely | NOT_RUN |
 | ADM-013 | Admin opens a valid `?batch=` URL | Matching pending card is focused after authentication | NOT_RUN |
 | ADM-014 | Admin approves a batch from the queue | Card disappears and pending counters update | PASS |
+| ADM-015 | Batch Chat status is SENT, PENDING, or FAILED | Card shows green, amber, or red delivery state without blocking approval | NOT_RUN |
+| ADM-016 | Chat delivery fails after withdrawal commit | Failed batch remains visible in the Admin queue with a red warning | NOT_RUN |
+
+## Google Chat notification
+
+| ID | Scenario | Expected result | Status |
+|---|---|---|---|
+| CHAT-001 | New withdrawal batch commits successfully | One grouped Chat card is sent after the Sheet transaction | NOT_RUN |
+| CHAT-002 | Batch contains repeated and different product codes | Card groups matching products and shows correct quantities and total | NOT_RUN |
+| CHAT-003 | Batch contains photos and serial numbers | Card contains neither photos nor the serial-level list | NOT_RUN |
+| CHAT-004 | Admin opens the card link | Admin page opens with the batch query after normal authentication | NOT_RUN |
+| CHAT-005 | Webhook rejects or times out | Rows remain SUBMITTED, Chat status becomes FAILED, and no automatic retry occurs | NOT_RUN |
+| CHAT-006 | Chat accepts the message | Every batch row becomes SENT with notification time and returned message name | NOT_RUN |
 
 The first deployed Admin-ERP acceptance milestone was manually verified on
 2026-11-24. The Admin page listed pending withdrawal batches, approval changed

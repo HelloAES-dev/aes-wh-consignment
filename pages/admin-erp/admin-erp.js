@@ -211,7 +211,14 @@ function createPendingBatchCard(batch) {
   const customerInformation = document.createElement('div');
   const customerCode = document.createElement('h3');
   const customerName = document.createElement('p');
+  const statusGroup = document.createElement('div');
   const pendingBadge = document.createElement('span');
+  const chatStatusBadge = createChatStatusBadge(
+    batch.chat_notification_status
+  );
+  const chatStatus = normalizeChatNotificationStatus(
+    batch.chat_notification_status
+  );
   const metadata = document.createElement('div');
   const products = document.createElement('div');
   const totalRow = document.createElement('div');
@@ -220,7 +227,7 @@ function createPendingBatchCard(batch) {
   const details = createBatchDetails(batch);
   const approvalButton = document.createElement('button');
 
-  card.className = 'admin-batch-card';
+  card.className = `admin-batch-card is-chat-${chatStatus.toLowerCase()}`;
   card.dataset.batchId = String(batch.withdrawal_batch_id || '');
 
   headingRow.className = 'batch-heading-row';
@@ -238,7 +245,9 @@ function createPendingBatchCard(batch) {
   pendingBadge.textContent = 'รอเปิดออเดอร์';
 
   customerInformation.append(customerCode, customerName);
-  headingRow.append(customerInformation, pendingBadge);
+  statusGroup.className = 'batch-status-group';
+  statusGroup.append(pendingBadge, chatStatusBadge);
+  headingRow.append(customerInformation, statusGroup);
 
   metadata.className = 'batch-metadata';
   metadata.append(
@@ -276,6 +285,27 @@ function createPendingBatchCard(batch) {
   );
 
   return card;
+}
+
+// Show notification delivery separately from the ERP approval state. A Chat
+// failure must remain visible without blocking the Admin from opening an order.
+function createChatStatusBadge(value) {
+  const status = normalizeChatNotificationStatus(value);
+  const statusLabels = {
+    SENT: 'แจ้ง Google Chat แล้ว',
+    PENDING: 'รอแจ้ง Google Chat',
+    FAILED: 'ส่ง Google Chat ไม่สำเร็จ'
+  };
+  const badge = document.createElement('span');
+
+  badge.className = `chat-status-badge is-${status.toLowerCase()}`;
+  badge.textContent = statusLabels[status];
+  return badge;
+}
+
+function normalizeChatNotificationStatus(value) {
+  const status = String(value || '').trim().toUpperCase();
+  return ['SENT', 'FAILED'].includes(status) ? status : 'PENDING';
 }
 
 function createMetadataItem(label, value) {

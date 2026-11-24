@@ -148,6 +148,7 @@ function createAdminWithdrawalBatchSummary(records) {
     customer_name_snapshot: firstRecord.customer_name_snapshot,
     submitted_at: firstRecord.submitted_at,
     request_status: firstRecord.request_status,
+    chat_notification_status: resolveBatchChatNotificationStatus(records),
     item_count: records.length,
     products: createWithdrawalProductSummary(records),
     items: records.map(function (record) {
@@ -162,6 +163,24 @@ function createAdminWithdrawalBatchSummary(records) {
   };
 }
 
+// FAILED takes priority because the Admin must see that notification delivery
+// needs attention. Otherwise any uncertain row keeps the batch PENDING.
+function resolveBatchChatNotificationStatus(records) {
+  const statuses = records.map(function (record) {
+    return record.chat_notification_status;
+  });
+
+  if (statuses.some(function (status) { return status === 'FAILED'; })) {
+    return 'FAILED';
+  }
+
+  if (statuses.every(function (status) { return status === 'SENT'; })) {
+    return 'SENT';
+  }
+
+  return 'PENDING';
+}
+
 function createAdminApprovalSuccess(records, idempotent) {
   return {
     success: true,
@@ -169,7 +188,7 @@ function createAdminApprovalSuccess(records, idempotent) {
     idempotent: idempotent,
     message: idempotent
       ? 'รอบเบิกสินค้านี้ได้รับการยืนยันแล้ว'
-      : 'ยืนยันการเปิดรายการใน ERP สำเร็จ',
+      : 'ยืนยันการเปิดออเดอร์ในระบบสำเร็จ',
     batch: createAdminWithdrawalBatchSummary(records)
   };
 }

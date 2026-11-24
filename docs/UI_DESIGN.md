@@ -118,6 +118,15 @@ After approval succeeds, the card is removed from the pending queue and the
 counters update. A backend or network failure leaves the card available for a
 safe retry.
 
+Each pending card also shows Google Chat delivery independently from approval:
+
+- Green: `แจ้ง Google Chat แล้ว` (`SENT`)
+- Amber: `รอแจ้ง Google Chat` (`PENDING` or unknown)
+- Red: `ส่ง Google Chat ไม่สำเร็จ` (`FAILED`)
+
+A red Chat state does not disable the approval button or remove the batch.
+Version one deliberately has no automatic retry button.
+
 The first deployed Admin-ERP acceptance test passed on 2026-11-24. Two
 withdrawal batches were displayed, approved, removed from the pending queue,
 and written with the Admin identity and approval timestamp.

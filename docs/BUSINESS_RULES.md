@@ -85,7 +85,13 @@ The backend is authoritative. The browser may collect input, but it must not dec
    reviews those details inside the authenticated web app.
 5. One batch creates one Chat notification, not one message per tire.
 6. If Chat delivery fails, the withdrawal rows remain `SUBMITTED` and only
-   `chat_notification_status` becomes `FAILED` for retry.
+   `chat_notification_status` becomes `FAILED`.
+7. The first version makes one delivery attempt after a new batch commits. It
+   does not retry automatically, because a blind retry could create duplicate
+   Chat messages after an uncertain network response.
+8. A failed Chat notification never removes the batch from the Admin queue.
+   The Admin page shows that batch with a red delivery warning so the ERP order
+   can still be processed from the system of record.
 
 ## Admin ERP confirmation
 
@@ -153,7 +159,9 @@ The backend is authoritative. The browser may collect input, but it must not dec
 
 - Write the transaction before sending a Chat notification.
 - Chat notification failure must not remove the transaction.
-- Store notification status and retry information in the transaction row.
+- Store `PENDING`, `SENT`, or `FAILED` notification status and the returned
+  message audit fields in the transaction row.
+- Do not automatically retry a `FAILED` notification in the first version.
 - Keep webhook URLs in Apps Script Script Properties, never in source code.
 
 ## Internet limitations

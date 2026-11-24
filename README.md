@@ -13,7 +13,8 @@ multi-item, and concurrency tests remain before production sign-off. The Admin
 ERP backend now lists grouped pending batches and confirms an entire batch with
 locking, audit fields, and idempotent retries. Its dedicated queue interface is
 implemented and has passed the first deployed acceptance test with two
-withdrawal batches. Google Chat notification remains the next module.
+withdrawal batches. Google Chat notification and its Admin-ERP delivery-status
+indicators are implemented and awaiting deployed acceptance tests.
 
 ## Purpose
 
@@ -56,10 +57,15 @@ Required Apps Script properties:
 SPREADSHEET_ID
 GOOGLE_CLIENT_ID
 WITHDRAWAL_PHOTO_FOLDER_ID
+GOOGLE_CHAT_WEBHOOK_URL
+ADMIN_ERP_BASE_URL
 ```
 
 `WITHDRAWAL_PHOTO_FOLDER_ID` identifies the company Drive folder that is
 allowed to store withdrawal photos. The backend rejects files outside it.
+`GOOGLE_CHAT_WEBHOOK_URL` must contain the rotated incoming webhook and must
+never be committed to source control. `ADMIN_ERP_BASE_URL` is the deployed
+Admin queue URL placed on each Chat card.
 
 ## Current authentication and access management
 
@@ -106,6 +112,8 @@ require an in-app checklist.
 - `docs/BUSINESS_RULES.md` — workflow rules, permissions, and failure behavior.
 - `docs/UI_DESIGN.md` — screens and interaction behavior.
 - `docs/TEST_PLAN.md` — acceptance scenarios before deployment.
+- `docs/NEXT_MIGRATION.md` — future Supabase/database migration strategy and
+  Google Sheets reporting model.
 - `docs/project-roadmap/` — owner-facing HTML progress checklist for the three operational flows and supporting foundation work.
 - `docs/project-log/` — daily project summaries created with `SUMMARIZE`.
 - `AGENTS.md` — coding and Codex working instructions.
@@ -144,6 +152,7 @@ backend/
 ├── AuthService.js          # Google token and permission verification
 ├── AccountService.js       # Authorized-account administration
 ├── AdminApprovalService.js # Admin ERP queue and batch confirmation
+├── ChatService.js          # Grouped Google Chat notification and audit state
 ├── ReceivingService.js     # Consignment receiving workflow
 ├── WithdrawalService.js    # Customer withdrawal workflow
 ├── SheetRepository.js      # Google Sheets access and row mapping

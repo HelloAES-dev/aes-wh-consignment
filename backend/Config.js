@@ -5,6 +5,8 @@
  * - SPREADSHEET_ID
  * - GOOGLE_CLIENT_ID
  * - WITHDRAWAL_PHOTO_FOLDER_ID
+ * - GOOGLE_CHAT_WEBHOOK_URL
+ * - ADMIN_ERP_BASE_URL
  */
 
 // Central configuration keeps sheet and header names in one readable location.
