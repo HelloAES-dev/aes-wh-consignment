@@ -1,29 +1,36 @@
 # Warehouse Registration Section Blueprint
 
-Use this document as the handoff prompt for building the warehouse section in a
-new chat. The section registers tires before they leave the company warehouse.
-It is not the sugar-mill receiving screen and it is not the customer withdrawal
-screen.
+This is a standalone handoff document. Give this file to a builder in another
+Codex project; that builder must not assume access to this repository,
+`AGENTS.md`, or any other project document.
 
-## Builder instruction
+Build a mobile-first warehouse registration section for a serialized-tire
+consignment system. The section registers tires before they leave the company
+warehouse. It is not the sugar-mill receiving screen and it is not the
+customer withdrawal screen.
 
-Build a mobile-first warehouse registration section that uses the existing
-authentication, Apps Script backend, Google Sheet data model, and project
-coding rules.
+## Non-negotiable implementation rules
 
-Before editing code:
+- Write production-grade, readable code with clear spacing and indentation.
+- Keep HTML, CSS, and JavaScript in separate files.
+- Add concise comments for logical sections and non-obvious decisions.
+- Use descriptive names; do not use cryptic aliases such as `$`.
+- Use semantic HTML, accessible labels, and mobile-friendly controls.
+- Thai is the primary worker-facing UI language. Technical identifiers and
+  source-code comments should remain in English.
+- Never place secrets, webhook URLs, OAuth secrets, or spreadsheet IDs in
+  frontend source code.
+- Do not write directly to Google Sheets from browser JavaScript.
+- The browser collects input; the backend validates, resolves, authorizes, and
+  writes the data.
+- Preserve unrelated existing modules. Do not change receiving, withdrawal,
+  Admin-ERP, Google Chat, or account-management behavior unless explicitly
+  requested.
 
-1. Read `AGENTS.md`, `README.md`, `docs/DATA_MODEL.md`,
-   `docs/BUSINESS_RULES.md`, and `docs/UI_DESIGN.md`.
-2. Inspect the current backend action router and repository helpers.
-3. Reuse the existing authentication/session pattern.
-4. Keep this work isolated to the warehouse page and the focused backend
-   service needed to register consignment items.
-5. Do not change receiving, withdrawal, Admin-ERP, Google Chat, or account
-   management behavior unless explicitly requested.
-
-Do not write directly to Google Sheets from browser JavaScript. The browser
-collects scan input; the backend validates, resolves, and writes the data.
+Before implementation, inspect the host project's existing authentication,
+backend action router, Sheet repository helpers, and deployment structure. Reuse
+them instead of creating a second authentication or data-access system. If a
+required capability is missing, report it clearly before changing its design.
 
 ## Operational purpose
 
@@ -236,5 +243,7 @@ Do not implement in this section:
 
 The warehouse section is complete only when the UI, backend action, Sheet row
 mapping, authentication, idempotency, mobile scanner behavior, and acceptance
-tests all pass. Update `DATA_MODEL.md`, `BUSINESS_RULES.md`, `UI_DESIGN.md`,
-`TEST_PLAN.md`, `README.md`, and the project roadmap after verification.
+tests all pass. If the host project has documentation files, synchronize its
+data model, business rules, UI specification, test plan, README, and roadmap
+after verification. This blueprint remains the portable implementation
+contract even when those files are unavailable.
