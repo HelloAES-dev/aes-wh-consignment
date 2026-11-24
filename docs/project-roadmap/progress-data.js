@@ -27,10 +27,10 @@ window.projectProgress = Object.freeze({
 
     'admin-bootstrap': 'done',
     'admin-accounts': 'in_progress',
-    'admin-queue': 'in_progress',
-    'admin-approval': 'in_progress',
+    'admin-queue': 'done',
+    'admin-approval': 'done',
     'admin-chat': 'planned',
-    'admin-audit': 'planned',
+    'admin-audit': 'in_progress',
 
     'foundation-data': 'done',
     'foundation-rules': 'done',

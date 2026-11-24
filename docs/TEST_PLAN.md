@@ -96,7 +96,16 @@ blank as expected. Retry, multi-item, rejection, and Chat tests remain open.
 | ADM-011 | Non-admin opens the ERP page URL | Queue remains hidden; frontend and backend reject access | NOT_RUN |
 | ADM-012 | Approval request fails or times out | Batch card remains visible and can be retried safely | NOT_RUN |
 | ADM-013 | Admin opens a valid `?batch=` URL | Matching pending card is focused after authentication | NOT_RUN |
-| ADM-014 | Admin approves a batch from the queue | Card disappears and pending counters update | NOT_RUN |
+| ADM-014 | Admin approves a batch from the queue | Card disappears and pending counters update | PASS |
+
+The first deployed Admin-ERP acceptance milestone was manually verified on
+2026-11-24. The Admin page listed pending withdrawal batches, approval changed
+each tested batch from `SUBMITTED` to `APPROVED`, the Admin identity and
+timestamps were recorded, repeated approval remained idempotent, and the
+approved batches disappeared from the pending queue. Test batches included
+`TEST-001` / `TN03500014` and `TEST-002` / `GT55699845`. Google Chat delivery,
+multi-product grouping, Chat-linked focus, non-Admin access, and simultaneous
+approval remain open tests.
 
 ## Authorized-account management
 

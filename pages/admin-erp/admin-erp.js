@@ -511,7 +511,7 @@ async function approveSelectedBatch() {
     setQueueStatus(
       result.idempotent
         ? 'รายการนี้ได้รับการอนุมัติไว้แล้ว'
-        : 'ยืนยันการเปิดออเดอร์ใน ERP สำเร็จ',
+        : 'ยืนยันการเปิดออเดอร์ในระบบสำเร็จ',
       'success'
     );
   } catch (error) {

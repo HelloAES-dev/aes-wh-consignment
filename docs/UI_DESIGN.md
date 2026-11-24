@@ -118,6 +118,10 @@ After approval succeeds, the card is removed from the pending queue and the
 counters update. A backend or network failure leaves the card available for a
 safe retry.
 
+The first deployed Admin-ERP acceptance test passed on 2026-11-24. Two
+withdrawal batches were displayed, approved, removed from the pending queue,
+and written with the Admin identity and approval timestamp.
+
 The first version does not include an in-app checklist, ERP integration, or
 photo attachments in the Google Chat card. The Chat card contains only the
 grouped summary and Admin web-app link.

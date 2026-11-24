@@ -12,8 +12,8 @@ have passed their first complete end-to-end test. Batch retry, rejection,
 multi-item, and concurrency tests remain before production sign-off. The Admin
 ERP backend now lists grouped pending batches and confirms an entire batch with
 locking, audit fields, and idempotent retries. Its dedicated queue interface is
-implemented and awaits deployed desktop/mobile acceptance testing. Google Chat
-notification remains the next module.
+implemented and has passed the first deployed acceptance test with two
+withdrawal batches. Google Chat notification remains the next module.
 
 ## Purpose
 
